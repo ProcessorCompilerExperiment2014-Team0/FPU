@@ -69,7 +69,9 @@ package body fcmp_p is
 
     if c.sign = 0 then
       if d.sign = 0 then
-        if (c.expt & c.frac) > (d.expt & d.frac) then
+        if (c.expt & c.frac) = (d.expt & d.frac) then
+          return EQ;
+        elsif (c.expt & c.frac) > (d.expt & d.frac) then
           return GT;
         else
           return LT;
@@ -81,7 +83,9 @@ package body fcmp_p is
       if d.sign = 0 then
         return LT;
       else
-        if (c.expt & c.frac) < (d.expt & d.frac) then
+        if (c.expt & c.frac) = (d.expt & d.frac) then
+          return EQ;
+        elsif (c.expt & c.frac) < (d.expt & d.frac) then
           return GT;
         else
           return LT;
