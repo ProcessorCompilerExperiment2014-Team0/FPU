@@ -69,7 +69,7 @@ begin
   process(clk)
   begin
     if rising_edge(clk) then
-      if en = '1' and not is_metavalue(addr) then        
+      if en = '1' then  
         data <= ROM(to_integer(addr));
       end if;
     end if;
@@ -105,19 +105,16 @@ architecture behavior of finv is
         data: out unsigned(35 downto 0));
   end component;
 
-  signal rom_en: std_logic;
+  signal rom_en: std_logic := '0';
   signal rom_addr: unsigned(10 downto 0);
   signal rom_data: unsigned(35 downto 0);
 
   type state_t is (NORMAL, CORNER);
   signal state: state_t := CORNER;
-  signal rd: fpu_data_t := VAL_PLUS_ZERO;
-  signal rf: float_t;
+  signal bridge_data: fpu_data_t;
 
 begin
 
-  rom_en <= '1';
-  
   table: table_rom port map(
     clk => clk,
     en => rom_en,
@@ -127,34 +124,38 @@ begin
   fetch: process(clk)
     variable next_state: state_t;
     variable f: float_t;
+    variable b: fpu_data_t;
   begin
     if rising_edge(clk) then
       next_state := CORNER;
       
       if is_metavalue(a) then
-        rd <= VAL_NAN;
+        rom_en <= '0';
+        b := VAL_NAN;
       else 
         f := float(unsigned(a));
 
         case float_type(f) is
-          when NAN => rd <= VAL_NAN;
+          when NAN => bridge_data := VAL_NAN;
           when INFORMAL =>
             if f.sign = "0" then
-              rd <= VAL_PLUS_INF;
+              b := VAL_PLUS_INF;
             else
-              rd <= VAL_MINUS_INF;
+              b := VAL_MINUS_INF;
             end if;
-          when PLUS_INF => rd <= VAL_PLUS_ZERO;
-          when MINUS_INF => rd <= VAL_MINUS_ZERO;
-          when PLUS_ZERO => rd <= VAL_PLUS_INF;
-          when MINUS_ZERO => rd <= VAL_MINUS_INF;
+          when PLUS_INF   => b := VAL_PLUS_ZERO;
+          when MINUS_INF  => b := VAL_MINUS_ZERO;
+          when PLUS_ZERO  => b := VAL_PLUS_INF;
+          when MINUS_ZERO => b := VAL_MINUS_INF;
           when others =>
             next_state := NORMAL;
+            rom_en <= '1';
             rom_addr <= f.frac(22 downto 12);
-            rf <= f;
+            b := unsigned(a);
         end case;
       end if;
 
+      bridge_data <= b;
       state <= next_state;
     end if;
   end process;
@@ -168,10 +169,10 @@ begin
     if rising_edge(clk) then
       case state is
         when CORNER =>
-          ans := rd;
+          ans := bridge_data;
 
         when NORMAL =>
-          f := rf;
+          f := float(brige_data);
 
           if is_metavalue(fpu_data(f)) then
             ans := VAL_NAN;
