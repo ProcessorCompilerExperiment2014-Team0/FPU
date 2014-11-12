@@ -73,7 +73,7 @@ int main(void) {
     fprintf(fp, "0x%06x 0x%06x\n", y2_mant, d);
   }
 
-  close(fp);
+  fclose(fp);
   
   printf("success (> %s)\n", OUTPUT);
   
