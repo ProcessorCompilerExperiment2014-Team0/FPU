@@ -5,7 +5,7 @@
 #include "MT.h"
 #include "def.h"
 
-const int times = 1<<15;
+const int times = 1<<13;
 
 uint32_t
 rand32()
@@ -18,6 +18,7 @@ rand32()
 	x = (rand() & 255) + (x<<8);
 	return x;
 }
+
 
 void
 gen_fcmp_gt()
@@ -43,7 +44,7 @@ gen_fcmp_eq()
 	{
 		a.uint32 = rand32();
 		b.uint32 = rand32();
-		s.uint32 = (a.fl32 > b.fl32)?1:0;
+		s.uint32 = (a.fl32 == b.fl32)?1:0;
 
 		printf("%08X %08X %08X\n", a.uint32, b.uint32, s.uint32);
 	}
@@ -51,7 +52,7 @@ gen_fcmp_eq()
 	for (int i=0; i < times; i++)
 	{
 		a.uint32 = rand32();
-		s.uint32 = (a.fl32 = a.fl32)?1:0;
+		s.uint32 = (a.fl32 == a.fl32)?1:0;
 
 		printf("%08X %08X %08X\n", a.uint32, a.uint32, s.uint32);
 	}
