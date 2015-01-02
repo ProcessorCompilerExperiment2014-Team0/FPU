@@ -41,7 +41,7 @@ int main(void) {
 
   result.uint32 = fsqrt(a.uint32);
   
-  printf("-- sqrt --\n");
+  printf("-- fsqrt(result) --\n");
   print_data(result);
 
   printf("\n");
