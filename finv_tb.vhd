@@ -17,48 +17,62 @@ ARCHITECTURE behavior OF testbench IS
 
   -- Component Declaration
   COMPONENT finv
-    PORT(A : IN std_logic_vector(31 downto 0);
-         S : OUT std_logic_vector(31 downto 0));
+    PORT(clk : in std_logic;
+         a : IN std_logic_vector(31 downto 0);
+         s : OUT std_logic_vector(31 downto 0));
   END COMPONENT;
 
   SIGNAL i1 :  std_logic_vector(31 downto 0);
   SIGNAL o1 :  std_logic_vector(31 downto 0);
+  signal clk : std_logic;
 
+  file infile : text is in "/home/kazuki/CPU/FPU/finv_test/testcase.txt";
+  file outfile : text is out "/home/kazuki/CPU/FPU/finv_test/result.txt";
+  
 BEGIN
 
   -- Component Instantiation
   uut: finv PORT MAP(
-    A => i1,
-    S => o1);
+    clk => clk,
+    a => i1,
+    s => o1);
 
   --  Test Bench Statements
-  tb : PROCESS
-    file infile : text is in "/home/kazuki/CPU/FPU/finv_test/testcase.txt";
-    file outfile : text is out "/home/kazuki/CPU/FPU/finv_test/result.txt";
+  tb : process (clk)
     variable my_line, out_line : LINE;
     variable a, b : std_logic_vector(31 downto 0);
   BEGIN
-    
-    wait for 100 ns; -- wait until global set/reset completes
 
-    -- Add user defined stimulus here
-    
-    while not endfile(infile) loop
-      readline(infile, my_line);
-      read(my_line, a);
+    if rising_edge(clk) then
+      --wait for 100 ns; -- wait until global set/reset completes
 
-      i1 <= a;
+      -- Add user defined stimulus here
 
-      wait for 2 ns;
+      if not endfile(infile) then
+        readline(infile, my_line);
+        read(my_line, a);
+
+        i1 <= a;
+      end if;
+      --wait for 2 ns;
 
       b := o1;
 
       write(out_line, b);
       writeline(outfile, out_line);
-    end loop;
+    end if;
+
 
   END PROCESS;
 
   --  End Test Bench
 
+  clockgen: process  
+  begin
+    clk <= '0';
+    wait for 5 ns;
+    clk <= '1';
+    wait for 5 ns;
+  end process;
+  
 end behavior;
