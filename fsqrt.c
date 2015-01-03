@@ -7,10 +7,10 @@
 #define MAX    512      // 1~2,2~4をそれぞれ512分割、計1024分割
 #define MASK9  8372224  // ((1 << 9) - 1) << 14
 #define MASK10 8380416  // ((1 << 10) - 1) << 13 
-#define MASK13 16382    // 11111111111110
+#define MASK14 16383    // 11111111111111
 
 
-long long unsigned int make_l(int index);
+static long long unsigned int make_l[MAX*2];
 
 uint32_t fsqrt(uint32_t a_uint32) {
   
@@ -41,7 +41,7 @@ uint32_t fsqrt(uint32_t a_uint32) {
 
     index = (x.frac & MASK9) >> 14;
 
-    printf("index = %d (before +1)\n", index); //debug
+    //printf("index = %d (before +1)\n", index); //debug
     
     if ((x.exp & 1) == 0) {      // 2の奇数乗の場合 ※exp-127
       index += (1 << 9);
@@ -49,7 +49,7 @@ uint32_t fsqrt(uint32_t a_uint32) {
       // 何もしない
     }
 
-    printf("index = %d (after +1)\n", index); //debug
+    //printf("index = %d (after +1)\n", index); //debug
 
     
     if (a.exp >= 127) {
@@ -72,2077 +72,1047 @@ uint32_t fsqrt(uint32_t a_uint32) {
       result.exp = 127 - exp;
     }
 
-    l = make_l(index);
-    y = (l & (0x7fffff << 13)) >> 13;
-    d = l & 0x1fff;
-    n = a.frac & MASK13;
+    l = make_l[index];
+    y = (l & (0x7fffff << 23)) >> 23;
+    d = l & 0x7fffff;
+    n = a.frac & MASK14;
 
-    printf("a.frac = %u\n", a.frac); //debug
-    printf("l = 0x %0llx\n", l); //debug
-    printf("y = %u\n", y); //debug
-    printf("d = %u\n", d); //debug
-    printf("n = %u\n", n); //debug
+    //printf("a.frac = %u\n", a.frac); //debug
+    //printf("l = 0x %0llx\n", l); //debug
+    //printf("y = %u\n", y); //debug
+    //printf("d = %u\n", d); //debug
+    //printf("n = %u\n", n); //debug
 
-    result.frac = y + ((d * n) >> 12);
+    result.frac = y + ((d * n) >> 23);
 
-    printf("result.frac = %23u\n", result.frac); //debug
+    //printf("result.frac = %23u\n", result.frac); //debug
   }
   return (result.uint32);
 }
 
-long long unsigned int make_l(int index) {
-  long long unsigned int l;
-  switch (index) {
-  case    0:
-    l = 0x000001ffd; break;
-  case    1:
-    l = 0x003ffbff4; break;
-  case    2:
-    l = 0x007fe3fec; break;
-  case    3:
-    l = 0x00bfbbfe4; break;
-  case    4:
-    l = 0x00ff83fdc; break;
-  case    5:
-    l = 0x013f3bfd4; break;
-  case    6:
-    l = 0x017ee3fcd; break;
-  case    7:
-    l = 0x01be7dfc4; break;
-  case    8:
-    l = 0x01fe05fbd; break;
-  case    9:
-    l = 0x023d7ffb5; break;
-  case   10:
-    l = 0x027ce9fae; break;
-  case   11:
-    l = 0x02bc45fa5; break;
-  case   12:
-    l = 0x02fb8ff9e; break;
-  case   13:
-    l = 0x033acbf96; break;
-  case   14:
-    l = 0x0379f7f8e; break;
-  case   15:
-    l = 0x03b913f87; break;
-  case   16:
-    l = 0x03f821f7f; break;
-  case   17:
-    l = 0x04371ff78; break;
-  case   18:
-    l = 0x04760ff70; break;
-  case   19:
-    l = 0x04b4eff68; break;
-  case   20:
-    l = 0x04f3bff61; break;
-  case   21:
-    l = 0x053281f59; break;
-  case   22:
-    l = 0x057133f52; break;
-  case   23:
-    l = 0x05afd7f4a; break;
-  case   24:
-    l = 0x05ee6bf43; break;
-  case   25:
-    l = 0x062cf1f3b; break;
-  case   26:
-    l = 0x066b67f34; break;
-  case   27:
-    l = 0x06a9cff2c; break;
-  case   28:
-    l = 0x06e827f25; break;
-  case   29:
-    l = 0x072671f1e; break;
-  case   30:
-    l = 0x0764adf17; break;
-  case   31:
-    l = 0x07a2dbf0f; break;
-  case   32:
-    l = 0x07e0f9f07; break;
-  case   33:
-    l = 0x081f07f01; break;
-  case   34:
-    l = 0x085d09ef9; break;
-  case   35:
-    l = 0x089afbef2; break;
-  case   36:
-    l = 0x08d8dfeeb; break;
-  case   37:
-    l = 0x0916b5ee3; break;
-  case   38:
-    l = 0x09547bedd; break;
-  case   39:
-    l = 0x099235ed5; break;
-  case   40:
-    l = 0x09cfdfece; break;
-  case   41:
-    l = 0x0a0d7bec7; break;
-  case   42:
-    l = 0x0a4b09ec0; break;
-  case   43:
-    l = 0x0a8889eb8; break;
-  case   44:
-    l = 0x0ac5f9eb2; break;
-  case   45:
-    l = 0x0b035deab; break;
-  case   46:
-    l = 0x0b40b3ea3; break;
-  case   47:
-    l = 0x0b7df9e9d; break;
-  case   48:
-    l = 0x0bbb33e95; break;
-  case   49:
-    l = 0x0bf85de8f; break;
-  case   50:
-    l = 0x0c357be87; break;
-  case   51:
-    l = 0x0c7289e81; break;
-  case   52:
-    l = 0x0caf8be7a; break;
-  case   53:
-    l = 0x0cec7fe73; break;
-  case   54:
-    l = 0x0d2965e6c; break;
-  case   55:
-    l = 0x0d663de65; break;
-  case   56:
-    l = 0x0da307e5e; break;
-  case   57:
-    l = 0x0ddfc3e58; break;
-  case   58:
-    l = 0x0e1c73e50; break;
-  case   59:
-    l = 0x0e5913e4a; break;
-  case   60:
-    l = 0x0e95a7e43; break;
-  case   61:
-    l = 0x0ed22de3c; break;
-  case   62:
-    l = 0x0f0ea5e36; break;
-  case   63:
-    l = 0x0f4b11e2f; break;
-  case   64:
-    l = 0x0f876fe28; break;
-  case   65:
-    l = 0x0fc3bfe21; break;
-  case   66:
-    l = 0x100001e1b; break;
-  case   67:
-    l = 0x103c37e14; break;
-  case   68:
-    l = 0x10785fe0e; break;
-  case   69:
-    l = 0x10b47be07; break;
-  case   70:
-    l = 0x10f089e00; break;
-  case   71:
-    l = 0x112c89dfa; break;
-  case   72:
-    l = 0x11687ddf3; break;
-  case   73:
-    l = 0x11a463dec; break;
-  case   74:
-    l = 0x11e03bde6; break;
-  case   75:
-    l = 0x121c07de0; break;
-  case   76:
-    l = 0x1257c7dd9; break;
-  case   77:
-    l = 0x129379dd3; break;
-  case   78:
-    l = 0x12cf1fdcc; break;
-  case   79:
-    l = 0x130ab7dc5; break;
-  case   80:
-    l = 0x134641dbf; break;
-  case   81:
-    l = 0x1381bfdb9; break;
-  case   82:
-    l = 0x13bd31db3; break;
-  case   83:
-    l = 0x13f897dac; break;
-  case   84:
-    l = 0x1433efda5; break;
-  case   85:
-    l = 0x146f39d9f; break;
-  case   86:
-    l = 0x14aa77d99; break;
-  case   87:
-    l = 0x14e5a9d93; break;
-  case   88:
-    l = 0x1520cfd8c; break;
-  case   89:
-    l = 0x155be7d86; break;
-  case   90:
-    l = 0x1596f3d80; break;
-  case   91:
-    l = 0x15d1f3d79; break;
-  case   92:
-    l = 0x160ce5d74; break;
-  case   93:
-    l = 0x1647cdd6d; break;
-  case   94:
-    l = 0x1682a7d66; break;
-  case   95:
-    l = 0x16bd73d61; break;
-  case   96:
-    l = 0x16f835d5a; break;
-  case   97:
-    l = 0x1732e9d55; break;
-  case   98:
-    l = 0x176d93d4e; break;
-  case   99:
-    l = 0x17a82fd48; break;
-  case  100:
-    l = 0x17e2bfd42; break;
-  case  101:
-    l = 0x181d43d3b; break;
-  case  102:
-    l = 0x1857b9d36; break;
-  case  103:
-    l = 0x189225d2f; break;
-  case  104:
-    l = 0x18cc83d2a; break;
-  case  105:
-    l = 0x1906d7d23; break;
-  case  106:
-    l = 0x19411dd1e; break;
-  case  107:
-    l = 0x197b59d17; break;
-  case  108:
-    l = 0x19b587d12; break;
-  case  109:
-    l = 0x19efabd0b; break;
-  case  110:
-    l = 0x1a29c1d05; break;
-  case  111:
-    l = 0x1a63cbd00; break;
-  case  112:
-    l = 0x1a9dcbcf9; break;
-  case  113:
-    l = 0x1ad7bdcf4; break;
-  case  114:
-    l = 0x1b11a5cee; break;
-  case  115:
-    l = 0x1b4b81ce7; break;
-  case  116:
-    l = 0x1b854fce2; break;
-  case  117:
-    l = 0x1bbf13cdc; break;
-  case  118:
-    l = 0x1bf8cbcd6; break;
-  case  119:
-    l = 0x1c3277cd1; break;
-  case  120:
-    l = 0x1c6c19cca; break;
-  case  121:
-    l = 0x1ca5adcc5; break;
-  case  122:
-    l = 0x1cdf37cbf; break;
-  case  123:
-    l = 0x1d18b5cb9; break;
-  case  124:
-    l = 0x1d5227cb3; break;
-  case  125:
-    l = 0x1d8b8dcad; break;
-  case  126:
-    l = 0x1dc4e7ca8; break;
-  case  127:
-    l = 0x1dfe37ca2; break;
-  case  128:
-    l = 0x1e377bc9d; break;
-  case  129:
-    l = 0x1e70b5c96; break;
-  case  130:
-    l = 0x1ea9e1c91; break;
-  case  131:
-    l = 0x1ee303c8b; break;
-  case  132:
-    l = 0x1f1c19c86; break;
-  case  133:
-    l = 0x1f5525c80; break;
-  case  134:
-    l = 0x1f8e25c7a; break;
-  case  135:
-    l = 0x1fc719c74; break;
-  case  136:
-    l = 0x200001c6f; break;
-  case  137:
-    l = 0x2038dfc6a; break;
-  case  138:
-    l = 0x2071b3c63; break;
-  case  139:
-    l = 0x20aa79c5f; break;
-  case  140:
-    l = 0x20e337c58; break;
-  case  141:
-    l = 0x211be7c53; break;
-  case  142:
-    l = 0x21548dc4e; break;
-  case  143:
-    l = 0x218d29c48; break;
-  case  144:
-    l = 0x21c5b9c42; break;
-  case  145:
-    l = 0x21fe3dc3d; break;
-  case  146:
-    l = 0x2236b7c38; break;
-  case  147:
-    l = 0x226f27c32; break;
-  case  148:
-    l = 0x22a78bc2c; break;
-  case  149:
-    l = 0x22dfe3c27; break;
-  case  150:
-    l = 0x231831c22; break;
-  case  151:
-    l = 0x235075c1c; break;
-  case  152:
-    l = 0x2388adc17; break;
-  case  153:
-    l = 0x23c0dbc12; break;
-  case  154:
-    l = 0x23f8ffc0c; break;
-  case  155:
-    l = 0x243117c06; break;
-  case  156:
-    l = 0x246923c01; break;
-  case  157:
-    l = 0x24a125bfc; break;
-  case  158:
-    l = 0x24d91dbf7; break;
-  case  159:
-    l = 0x25110bbf1; break;
-  case  160:
-    l = 0x2548edbec; break;
-  case  161:
-    l = 0x2580c5be7; break;
-  case  162:
-    l = 0x25b893be1; break;
-  case  163:
-    l = 0x25f055bdc; break;
-  case  164:
-    l = 0x26280dbd7; break;
-  case  165:
-    l = 0x265fbbbd1; break;
-  case  166:
-    l = 0x26975dbcc; break;
-  case  167:
-    l = 0x26cef5bc7; break;
-  case  168:
-    l = 0x270683bc2; break;
-  case  169:
-    l = 0x273e07bbd; break;
-  case  170:
-    l = 0x277581bb7; break;
-  case  171:
-    l = 0x27acefbb2; break;
-  case  172:
-    l = 0x27e453bad; break;
-  case  173:
-    l = 0x281badba8; break;
-  case  174:
-    l = 0x2852fdba3; break;
-  case  175:
-    l = 0x288a43b9d; break;
-  case  176:
-    l = 0x28c17db98; break;
-  case  177:
-    l = 0x28f8adb94; break;
-  case  178:
-    l = 0x292fd5b8e; break;
-  case  179:
-    l = 0x2966f1b89; break;
-  case  180:
-    l = 0x299e03b84; break;
-  case  181:
-    l = 0x29d50bb7f; break;
-  case  182:
-    l = 0x2a0c09b79; break;
-  case  183:
-    l = 0x2a42fbb75; break;
-  case  184:
-    l = 0x2a79e5b70; break;
-  case  185:
-    l = 0x2ab0c5b6a; break;
-  case  186:
-    l = 0x2ae799b66; break;
-  case  187:
-    l = 0x2b1e65b61; break;
-  case  188:
-    l = 0x2b5527b5b; break;
-  case  189:
-    l = 0x2b8bddb57; break;
-  case  190:
-    l = 0x2bc28bb51; break;
-  case  191:
-    l = 0x2bf92db4d; break;
-  case  192:
-    l = 0x2c2fc7b48; break;
-  case  193:
-    l = 0x2c6657b43; break;
-  case  194:
-    l = 0x2c9cddb3d; break;
-  case  195:
-    l = 0x2cd357b39; break;
-  case  196:
-    l = 0x2d09c9b34; break;
-  case  197:
-    l = 0x2d4031b2f; break;
-  case  198:
-    l = 0x2d768fb2a; break;
-  case  199:
-    l = 0x2dace3b26; break;
-  case  200:
-    l = 0x2de32fb20; break;
-  case  201:
-    l = 0x2e196fb1b; break;
-  case  202:
-    l = 0x2e4fa5b17; break;
-  case  203:
-    l = 0x2e85d3b12; break;
-  case  204:
-    l = 0x2ebbf7b0d; break;
-  case  205:
-    l = 0x2ef211b08; break;
-  case  206:
-    l = 0x2f2821b03; break;
-  case  207:
-    l = 0x2f5e27aff; break;
-  case  208:
-    l = 0x2f9425af9; break;
-  case  209:
-    l = 0x2fca17af5; break;
-  case  210:
-    l = 0x300001af0; break;
-  case  211:
-    l = 0x3035e1aec; break;
-  case  212:
-    l = 0x306bb9ae6; break;
-  case  213:
-    l = 0x30a185ae2; break;
-  case  214:
-    l = 0x30d749add; break;
-  case  215:
-    l = 0x310d03ad9; break;
-  case  216:
-    l = 0x3142b5ad3; break;
-  case  217:
-    l = 0x31785bacf; break;
-  case  218:
-    l = 0x31adf9acb; break;
-  case  219:
-    l = 0x31e38fac5; break;
-  case  220:
-    l = 0x321919ac1; break;
-  case  221:
-    l = 0x324e9babc; break;
-  case  222:
-    l = 0x328413ab8; break;
-  case  223:
-    l = 0x32b983ab3; break;
-  case  224:
-    l = 0x32eee9aae; break;
-  case  225:
-    l = 0x332445aaa; break;
-  case  226:
-    l = 0x335999aa5; break;
-  case  227:
-    l = 0x338ee3aa0; break;
-  case  228:
-    l = 0x33c423a9c; break;
-  case  229:
-    l = 0x33f95ba97; break;
-  case  230:
-    l = 0x342e89a93; break;
-  case  231:
-    l = 0x3463afa8e; break;
-  case  232:
-    l = 0x3498cba8a; break;
-  case  233:
-    l = 0x34cddfa84; break;
-  case  234:
-    l = 0x3502e7a81; break;
-  case  235:
-    l = 0x3537e9a7c; break;
-  case  236:
-    l = 0x356ce1a77; break;
-  case  237:
-    l = 0x35a1cfa73; break;
-  case  238:
-    l = 0x35d6b5a6e; break;
-  case  239:
-    l = 0x360b91a6a; break;
-  case  240:
-    l = 0x364065a65; break;
-  case  241:
-    l = 0x36752fa61; break;
-  case  242:
-    l = 0x36a9f1a5c; break;
-  case  243:
-    l = 0x36dea9a58; break;
-  case  244:
-    l = 0x371359a53; break;
-  case  245:
-    l = 0x3747ffa4f; break;
-  case  246:
-    l = 0x377c9da4b; break;
-  case  247:
-    l = 0x37b133a46; break;
-  case  248:
-    l = 0x37e5bfa42; break;
-  case  249:
-    l = 0x381a43a3d; break;
-  case  250:
-    l = 0x384ebda39; break;
-  case  251:
-    l = 0x38832fa34; break;
-  case  252:
-    l = 0x38b797a30; break;
-  case  253:
-    l = 0x38ebf7a2c; break;
-  case  254:
-    l = 0x39204fa27; break;
-  case  255:
-    l = 0x39549da23; break;
-  case  256:
-    l = 0x3988e3a1e; break;
-  case  257:
-    l = 0x39bd1fa1b; break;
-  case  258:
-    l = 0x39f155a16; break;
-  case  259:
-    l = 0x3a2581a11; break;
-  case  260:
-    l = 0x3a59a3a0d; break;
-  case  261:
-    l = 0x3a8dbda09; break;
-  case  262:
-    l = 0x3ac1cfa05; break;
-  case  263:
-    l = 0x3af5d9a00; break;
-  case  264:
-    l = 0x3b29d99fc; break;
-  case  265:
-    l = 0x3b5dd19f8; break;
-  case  266:
-    l = 0x3b91c19f3; break;
-  case  267:
-    l = 0x3bc5a79f0; break;
-  case  268:
-    l = 0x3bf9879eb; break;
-  case  269:
-    l = 0x3c2d5d9e6; break;
-  case  270:
-    l = 0x3c61299e3; break;
-  case  271:
-    l = 0x3c94ef9de; break;
-  case  272:
-    l = 0x3cc8ab9da; break;
-  case  273:
-    l = 0x3cfc5f9d6; break;
-  case  274:
-    l = 0x3d300b9d2; break;
-  case  275:
-    l = 0x3d63af9cd; break;
-  case  276:
-    l = 0x3d97499c9; break;
-  case  277:
-    l = 0x3dcadb9c5; break;
-  case  278:
-    l = 0x3dfe659c1; break;
-  case  279:
-    l = 0x3e31e79bd; break;
-  case  280:
-    l = 0x3e65619b8; break;
-  case  281:
-    l = 0x3e98d19b5; break;
-  case  282:
-    l = 0x3ecc3b9b0; break;
-  case  283:
-    l = 0x3eff9b9ac; break;
-  case  284:
-    l = 0x3f32f39a8; break;
-  case  285:
-    l = 0x3f66439a4; break;
-  case  286:
-    l = 0x3f998b9a0; break;
-  case  287:
-    l = 0x3fcccb99b; break;
-  case  288:
-    l = 0x400001998; break;
-  case  289:
-    l = 0x403331993; break;
-  case  290:
-    l = 0x406657990; break;
-  case  291:
-    l = 0x40997798b; break;
-  case  292:
-    l = 0x40cc8d987; break;
-  case  293:
-    l = 0x40ff9b983; break;
-  case  294:
-    l = 0x4132a1980; break;
-  case  295:
-    l = 0x4165a197b; break;
-  case  296:
-    l = 0x419897977; break;
-  case  297:
-    l = 0x41cb85973; break;
-  case  298:
-    l = 0x41fe6b96f; break;
-  case  299:
-    l = 0x42314996b; break;
-  case  300:
-    l = 0x42641f967; break;
-  case  301:
-    l = 0x4296ed963; break;
-  case  302:
-    l = 0x42c9b395f; break;
-  case  303:
-    l = 0x42fc7195b; break;
-  case  304:
-    l = 0x432f27957; break;
-  case  305:
-    l = 0x4361d5953; break;
-  case  306:
-    l = 0x43947b94f; break;
-  case  307:
-    l = 0x43c71994b; break;
-  case  308:
-    l = 0x43f9af947; break;
-  case  309:
-    l = 0x442c3d944; break;
-  case  310:
-    l = 0x445ec593f; break;
-  case  311:
-    l = 0x44914393b; break;
-  case  312:
-    l = 0x44c3b9938; break;
-  case  313:
-    l = 0x44f629933; break;
-  case  314:
-    l = 0x45288f930; break;
-  case  315:
-    l = 0x455aef92c; break;
-  case  316:
-    l = 0x458d47928; break;
-  case  317:
-    l = 0x45bf97924; break;
-  case  318:
-    l = 0x45f1df920; break;
-  case  319:
-    l = 0x46241f91c; break;
-  case  320:
-    l = 0x465657919; break;
-  case  321:
-    l = 0x468889914; break;
-  case  322:
-    l = 0x46bab1911; break;
-  case  323:
-    l = 0x46ecd390d; break;
-  case  324:
-    l = 0x471eed909; break;
-  case  325:
-    l = 0x4750ff905; break;
-  case  326:
-    l = 0x478309901; break;
-  case  327:
-    l = 0x47b50b8fe; break;
-  case  328:
-    l = 0x47e7078fa; break;
-  case  329:
-    l = 0x4818fb8f6; break;
-  case  330:
-    l = 0x484ae78f2; break;
-  case  331:
-    l = 0x487ccb8ee; break;
-  case  332:
-    l = 0x48aea78eb; break;
-  case  333:
-    l = 0x48e07d8e7; break;
-  case  334:
-    l = 0x49124b8e3; break;
-  case  335:
-    l = 0x4944118df; break;
-  case  336:
-    l = 0x4975cf8db; break;
-  case  337:
-    l = 0x49a7858d8; break;
-  case  338:
-    l = 0x49d9358d4; break;
-  case  339:
-    l = 0x4a0add8d1; break;
-  case  340:
-    l = 0x4a3c7f8cc; break;
-  case  341:
-    l = 0x4a6e178c9; break;
-  case  342:
-    l = 0x4a9fa98c5; break;
-  case  343:
-    l = 0x4ad1338c2; break;
-  case  344:
-    l = 0x4b02b78bd; break;
-  case  345:
-    l = 0x4b34318bb; break;
-  case  346:
-    l = 0x4b65a78b6; break;
-  case  347:
-    l = 0x4b97138b3; break;
-  case  348:
-    l = 0x4bc8798af; break;
-  case  349:
-    l = 0x4bf9d78ab; break;
-  case  350:
-    l = 0x4c2b2d8a8; break;
-  case  351:
-    l = 0x4c5c7d8a4; break;
-  case  352:
-    l = 0x4c8dc58a0; break;
-  case  353:
-    l = 0x4cbf0589d; break;
-  case  354:
-    l = 0x4cf03f899; break;
-  case  355:
-    l = 0x4d2171895; break;
-  case  356:
-    l = 0x4d529b892; break;
-  case  357:
-    l = 0x4d83bf88e; break;
-  case  358:
-    l = 0x4db4db88b; break;
-  case  359:
-    l = 0x4de5f1887; break;
-  case  360:
-    l = 0x4e16ff883; break;
-  case  361:
-    l = 0x4e4805880; break;
-  case  362:
-    l = 0x4e790587d; break;
-  case  363:
-    l = 0x4ea9ff878; break;
-  case  364:
-    l = 0x4edaef875; break;
-  case  365:
-    l = 0x4f0bd9872; break;
-  case  366:
-    l = 0x4f3cbd86e; break;
-  case  367:
-    l = 0x4f6d9986a; break;
-  case  368:
-    l = 0x4f9e6d867; break;
-  case  369:
-    l = 0x4fcf3b863; break;
-  case  370:
-    l = 0x500001860; break;
-  case  371:
-    l = 0x5030c185c; break;
-  case  372:
-    l = 0x506179859; break;
-  case  373:
-    l = 0x50922b855; break;
-  case  374:
-    l = 0x50c2d5852; break;
-  case  375:
-    l = 0x50f37984e; break;
-  case  376:
-    l = 0x51241584b; break;
-  case  377:
-    l = 0x5154ab847; break;
-  case  378:
-    l = 0x518539843; break;
-  case  379:
-    l = 0x51b5bf841; break;
-  case  380:
-    l = 0x51e64183c; break;
-  case  381:
-    l = 0x5216b9839; break;
-  case  382:
-    l = 0x52472b836; break;
-  case  383:
-    l = 0x527797833; break;
-  case  384:
-    l = 0x52a7fd82e; break;
-  case  385:
-    l = 0x52d85982c; break;
-  case  386:
-    l = 0x5308b1828; break;
-  case  387:
-    l = 0x533901824; break;
-  case  388:
-    l = 0x536949821; break;
-  case  389:
-    l = 0x53998b81e; break;
-  case  390:
-    l = 0x53c9c781a; break;
-  case  391:
-    l = 0x53f9fb817; break;
-  case  392:
-    l = 0x542a29813; break;
-  case  393:
-    l = 0x545a4f810; break;
-  case  394:
-    l = 0x548a6f80d; break;
-  case  395:
-    l = 0x54ba89809; break;
-  case  396:
-    l = 0x54ea9b806; break;
-  case  397:
-    l = 0x551aa7802; break;
-  case  398:
-    l = 0x554aab800; break;
-  case  399:
-    l = 0x557aab7fb; break;
-  case  400:
-    l = 0x55aaa17f9; break;
-  case  401:
-    l = 0x55da937f5; break;
-  case  402:
-    l = 0x560a7d7f1; break;
-  case  403:
-    l = 0x563a5f7ee; break;
-  case  404:
-    l = 0x566a3b7eb; break;
-  case  405:
-    l = 0x569a117e8; break;
-  case  406:
-    l = 0x56c9e17e4; break;
-  case  407:
-    l = 0x56f9a97e1; break;
-  case  408:
-    l = 0x57296b7de; break;
-  case  409:
-    l = 0x5759277da; break;
-  case  410:
-    l = 0x5788db7d7; break;
-  case  411:
-    l = 0x57b8897d4; break;
-  case  412:
-    l = 0x57e8317d0; break;
-  case  413:
-    l = 0x5817d17cd; break;
-  case  414:
-    l = 0x58476b7ca; break;
-  case  415:
-    l = 0x5876ff7c6; break;
-  case  416:
-    l = 0x58a68b7c4; break;
-  case  417:
-    l = 0x58d6137c0; break;
-  case  418:
-    l = 0x5905937bc; break;
-  case  419:
-    l = 0x59350b7ba; break;
-  case  420:
-    l = 0x59647f7b6; break;
-  case  421:
-    l = 0x5993eb7b3; break;
-  case  422:
-    l = 0x59c3517af; break;
-  case  423:
-    l = 0x59f2af7ad; break;
-  case  424:
-    l = 0x5a22097a9; break;
-  case  425:
-    l = 0x5a515b7a6; break;
-  case  426:
-    l = 0x5a80a77a3; break;
-  case  427:
-    l = 0x5aafed79f; break;
-  case  428:
-    l = 0x5adf2b79c; break;
-  case  429:
-    l = 0x5b0e6379a; break;
-  case  430:
-    l = 0x5b3d97795; break;
-  case  431:
-    l = 0x5b6cc1793; break;
-  case  432:
-    l = 0x5b9be7790; break;
-  case  433:
-    l = 0x5bcb0778c; break;
-  case  434:
-    l = 0x5bfa1f789; break;
-  case  435:
-    l = 0x5c2931786; break;
-  case  436:
-    l = 0x5c583d783; break;
-  case  437:
-    l = 0x5c874377f; break;
-  case  438:
-    l = 0x5cb64177d; break;
-  case  439:
-    l = 0x5ce53b779; break;
-  case  440:
-    l = 0x5d142d776; break;
-  case  441:
-    l = 0x5d4319773; break;
-  case  442:
-    l = 0x5d71ff770; break;
-  case  443:
-    l = 0x5da0df76c; break;
-  case  444:
-    l = 0x5dcfb776a; break;
-  case  445:
-    l = 0x5dfe8b766; break;
-  case  446:
-    l = 0x5e2d57764; break;
-  case  447:
-    l = 0x5e5c1f760; break;
-  case  448:
-    l = 0x5e8adf75d; break;
-  case  449:
-    l = 0x5eb99975a; break;
-  case  450:
-    l = 0x5ee84d757; break;
-  case  451:
-    l = 0x5f16fb753; break;
-  case  452:
-    l = 0x5f45a1751; break;
-  case  453:
-    l = 0x5f744374d; break;
-  case  454:
-    l = 0x5fa2dd74b; break;
-  case  455:
-    l = 0x5fd173747; break;
-  case  456:
-    l = 0x600001744; break;
-  case  457:
-    l = 0x602e89742; break;
-  case  458:
-    l = 0x605d0d73e; break;
-  case  459:
-    l = 0x608b8973b; break;
-  case  460:
-    l = 0x60b9ff738; break;
-  case  461:
-    l = 0x60e86f735; break;
-  case  462:
-    l = 0x6116d9732; break;
-  case  463:
-    l = 0x61453d72f; break;
-  case  464:
-    l = 0x61739b72b; break;
-  case  465:
-    l = 0x61a1f1729; break;
-  case  466:
-    l = 0x61d043726; break;
-  case  467:
-    l = 0x61fe8f723; break;
-  case  468:
-    l = 0x622cd5720; break;
-  case  469:
-    l = 0x625b1571c; break;
-  case  470:
-    l = 0x62894d71a; break;
-  case  471:
-    l = 0x62b781717; break;
-  case  472:
-    l = 0x62e5af713; break;
-  case  473:
-    l = 0x6313d5711; break;
-  case  474:
-    l = 0x6341f770e; break;
-  case  475:
-    l = 0x63701370a; break;
-  case  476:
-    l = 0x639e27708; break;
-  case  477:
-    l = 0x63cc37705; break;
-  case  478:
-    l = 0x63fa41702; break;
-  case  479:
-    l = 0x6428456fe; break;
-  case  480:
-    l = 0x6456416fc; break;
-  case  481:
-    l = 0x6484396f9; break;
-  case  482:
-    l = 0x64b22b6f6; break;
-  case  483:
-    l = 0x64e0176f3; break;
-  case  484:
-    l = 0x650dfd6f0; break;
-  case  485:
-    l = 0x653bdd6ed; break;
-  case  486:
-    l = 0x6569b76ea; break;
-  case  487:
-    l = 0x65978b6e7; break;
-  case  488:
-    l = 0x65c5596e5; break;
-  case  489:
-    l = 0x65f3236e1; break;
-  case  490:
-    l = 0x6620e56de; break;
-  case  491:
-    l = 0x664ea16dc; break;
-  case  492:
-    l = 0x667c596d8; break;
-  case  493:
-    l = 0x66aa096d6; break;
-  case  494:
-    l = 0x66d7b56d3; break;
-  case  495:
-    l = 0x67055b6d0; break;
-  case  496:
-    l = 0x6732fb6cd; break;
-  case  497:
-    l = 0x6760956ca; break;
-  case  498:
-    l = 0x678e296c7; break;
-  case  499:
-    l = 0x67bbb76c4; break;
-  case  500:
-    l = 0x67e93f6c2; break;
-  case  501:
-    l = 0x6816c36be; break;
-  case  502:
-    l = 0x68443f6bc; break;
-  case  503:
-    l = 0x6871b76b9; break;
-  case  504:
-    l = 0x689f296b6; break;
-  case  505:
-    l = 0x68cc956b3; break;
-  case  506:
-    l = 0x68f9fb6b0; break;
-  case  507:
-    l = 0x69275b6ad; break;
-  case  508:
-    l = 0x6954b56ab; break;
-  case  509:
-    l = 0x69820b6a7; break;
-  case  510:
-    l = 0x69af596a5; break;
-  case  511:
-    l = 0x69dca36a2; break;
-  case  512:
-    l = 0x6a09ead3b; break;
-  case  513:
-    l = 0x6a6460d31; break;
-  case  514:
-    l = 0x6abec2d25; break;
-  case  515:
-    l = 0x6b190cd1a; break;
-  case  516:
-    l = 0x6b7340d0e; break;
-  case  517:
-    l = 0x6bcd5cd04; break;
-  case  518:
-    l = 0x6c2764cf8; break;
-  case  519:
-    l = 0x6c8154cee; break;
-  case  520:
-    l = 0x6cdb30ce2; break;
-  case  521:
-    l = 0x6d34f4cd7; break;
-  case  522:
-    l = 0x6d8ea2ccc; break;
-  case  523:
-    l = 0x6de83acc2; break;
-  case  524:
-    l = 0x6e41becb6; break;
-  case  525:
-    l = 0x6e9b2acab; break;
-  case  526:
-    l = 0x6ef480ca1; break;
-  case  527:
-    l = 0x6f4dc2c96; break;
-  case  528:
-    l = 0x6fa6eec8b; break;
-  case  529:
-    l = 0x700004c80; break;
-  case  530:
-    l = 0x705904c75; break;
-  case  531:
-    l = 0x70b1eec6b; break;
-  case  532:
-    l = 0x710ac4c60; break;
-  case  533:
-    l = 0x716384c55; break;
-  case  534:
-    l = 0x71bc2ec4b; break;
-  case  535:
-    l = 0x7214c4c40; break;
-  case  536:
-    l = 0x726d44c36; break;
-  case  537:
-    l = 0x72c5b0c2b; break;
-  case  538:
-    l = 0x731e06c21; break;
-  case  539:
-    l = 0x737648c16; break;
-  case  540:
-    l = 0x73ce74c0b; break;
-  case  541:
-    l = 0x74268ac02; break;
-  case  542:
-    l = 0x747e8ebf7; break;
-  case  543:
-    l = 0x74d67cbec; break;
-  case  544:
-    l = 0x752e54be2; break;
-  case  545:
-    l = 0x758618bd8; break;
-  case  546:
-    l = 0x75ddc8bce; break;
-  case  547:
-    l = 0x763564bc3; break;
-  case  548:
-    l = 0x768ceabb9; break;
-  case  549:
-    l = 0x76e45cbaf; break;
-  case  550:
-    l = 0x773bbaba5; break;
-  case  551:
-    l = 0x779304b9b; break;
-  case  552:
-    l = 0x77ea3ab90; break;
-  case  553:
-    l = 0x78415ab87; break;
-  case  554:
-    l = 0x789868b7c; break;
-  case  555:
-    l = 0x78ef60b72; break;
-  case  556:
-    l = 0x794644b69; break;
-  case  557:
-    l = 0x799d16b5e; break;
-  case  558:
-    l = 0x79f3d2b55; break;
-  case  559:
-    l = 0x7a4a7cb4a; break;
-  case  560:
-    l = 0x7aa110b41; break;
-  case  561:
-    l = 0x7af792b37; break;
-  case  562:
-    l = 0x7b4e00b2d; break;
-  case  563:
-    l = 0x7ba45ab23; break;
-  case  564:
-    l = 0x7bfaa0b19; break;
-  case  565:
-    l = 0x7c50d2b10; break;
-  case  566:
-    l = 0x7ca6f2b06; break;
-  case  567:
-    l = 0x7cfcfeafc; break;
-  case  568:
-    l = 0x7d52f6af2; break;
-  case  569:
-    l = 0x7da8daae9; break;
-  case  570:
-    l = 0x7dfeacadf; break;
-  case  571:
-    l = 0x7e546aad6; break;
-  case  572:
-    l = 0x7eaa16acc; break;
-  case  573:
-    l = 0x7effaeac2; break;
-  case  574:
-    l = 0x7f5532ab9; break;
-  case  575:
-    l = 0x7faaa4ab0; break;
-  case  576:
-    l = 0x800004aa6; break;
-  case  577:
-    l = 0x805550a9c; break;
-  case  578:
-    l = 0x80aa88a93; break;
-  case  579:
-    l = 0x80ffaea8a; break;
-  case  580:
-    l = 0x8154c2a80; break;
-  case  581:
-    l = 0x81a9c2a77; break;
-  case  582:
-    l = 0x81feb0a6d; break;
-  case  583:
-    l = 0x82538aa65; break;
-  case  584:
-    l = 0x82a854a5b; break;
-  case  585:
-    l = 0x82fd0aa51; break;
-  case  586:
-    l = 0x8351aca49; break;
-  case  587:
-    l = 0x83a63ea3f; break;
-  case  588:
-    l = 0x83fabca36; break;
-  case  589:
-    l = 0x844f28a2d; break;
-  case  590:
-    l = 0x84a382a24; break;
-  case  591:
-    l = 0x84f7caa1a; break;
-  case  592:
-    l = 0x854bfea12; break;
-  case  593:
-    l = 0x85a022a08; break;
-  case  594:
-    l = 0x85f4329ff; break;
-  case  595:
-    l = 0x8648309f7; break;
-  case  596:
-    l = 0x869c1e9ed; break;
-  case  597:
-    l = 0x86eff89e5; break;
-  case  598:
-    l = 0x8743c29db; break;
-  case  599:
-    l = 0x8797789d2; break;
-  case  600:
-    l = 0x87eb1c9ca; break;
-  case  601:
-    l = 0x883eb09c0; break;
-  case  602:
-    l = 0x8892309b8; break;
-  case  603:
-    l = 0x88e5a09af; break;
-  case  604:
-    l = 0x8938fe9a6; break;
-  case  605:
-    l = 0x898c4a99e; break;
-  case  606:
-    l = 0x89df86994; break;
-  case  607:
-    l = 0x8a32ae98c; break;
-  case  608:
-    l = 0x8a85c6983; break;
-  case  609:
-    l = 0x8ad8cc97a; break;
-  case  610:
-    l = 0x8b2bc0971; break;
-  case  611:
-    l = 0x8b7ea2969; break;
-  case  612:
-    l = 0x8bd174961; break;
-  case  613:
-    l = 0x8c2436957; break;
-  case  614:
-    l = 0x8c76e494f; break;
-  case  615:
-    l = 0x8cc982946; break;
-  case  616:
-    l = 0x8d1c0e93e; break;
-  case  617:
-    l = 0x8d6e8a936; break;
-  case  618:
-    l = 0x8dc0f692c; break;
-  case  619:
-    l = 0x8e134e924; break;
-  case  620:
-    l = 0x8e659691c; break;
-  case  621:
-    l = 0x8eb7ce913; break;
-  case  622:
-    l = 0x8f09f490b; break;
-  case  623:
-    l = 0x8f5c0a903; break;
-  case  624:
-    l = 0x8fae108fa; break;
-  case  625:
-    l = 0x9000048f1; break;
-  case  626:
-    l = 0x9051e68e9; break;
-  case  627:
-    l = 0x90a3b88e1; break;
-  case  628:
-    l = 0x90f57a8d9; break;
-  case  629:
-    l = 0x91472c8d0; break;
-  case  630:
-    l = 0x9198cc8c8; break;
-  case  631:
-    l = 0x91ea5c8bf; break;
-  case  632:
-    l = 0x923bda8b8; break;
-  case  633:
-    l = 0x928d4a8af; break;
-  case  634:
-    l = 0x92dea88a7; break;
-  case  635:
-    l = 0x932ff689f; break;
-  case  636:
-    l = 0x938134896; break;
-  case  637:
-    l = 0x93d26088f; break;
-  case  638:
-    l = 0x94237e886; break;
-  case  639:
-    l = 0x94748a87e; break;
-  case  640:
-    l = 0x94c586876; break;
-  case  641:
-    l = 0x95167286e; break;
-  case  642:
-    l = 0x95674e866; break;
-  case  643:
-    l = 0x95b81a85e; break;
-  case  644:
-    l = 0x9608d6856; break;
-  case  645:
-    l = 0x96598284e; break;
-  case  646:
-    l = 0x96aa1e846; break;
-  case  647:
-    l = 0x96faaa83e; break;
-  case  648:
-    l = 0x974b26836; break;
-  case  649:
-    l = 0x979b9282e; break;
-  case  650:
-    l = 0x97ebee826; break;
-  case  651:
-    l = 0x983c3a81f; break;
-  case  652:
-    l = 0x988c78816; break;
-  case  653:
-    l = 0x98dca480f; break;
-  case  654:
-    l = 0x992cc2806; break;
-  case  655:
-    l = 0x997cce7ff; break;
-  case  656:
-    l = 0x99cccc7f7; break;
-  case  657:
-    l = 0x9a1cba7f0; break;
-  case  658:
-    l = 0x9a6c9a7e7; break;
-  case  659:
-    l = 0x9abc687e0; break;
-  case  660:
-    l = 0x9b0c287d8; break;
-  case  661:
-    l = 0x9b5bd87d1; break;
-  case  662:
-    l = 0x9bab7a7c8; break;
-  case  663:
-    l = 0x9bfb0a7c1; break;
-  case  664:
-    l = 0x9c4a8c7ba; break;
-  case  665:
-    l = 0x9c9a007b1; break;
-  case  666:
-    l = 0x9ce9627aa; break;
-  case  667:
-    l = 0x9d38b67a3; break;
-  case  668:
-    l = 0x9d87fc79b; break;
-  case  669:
-    l = 0x9dd732793; break;
-  case  670:
-    l = 0x9e265878c; break;
-  case  671:
-    l = 0x9e7570784; break;
-  case  672:
-    l = 0x9ec47877c; break;
-  case  673:
-    l = 0x9f1370776; break;
-  case  674:
-    l = 0x9f625c76d; break;
-  case  675:
-    l = 0x9fb136766; break;
-  case  676:
-    l = 0xa0000275f; break;
-  case  677:
-    l = 0xa04ec0757; break;
-  case  678:
-    l = 0xa09d6e750; break;
-  case  679:
-    l = 0xa0ec0e749; break;
-  case  680:
-    l = 0xa13aa0741; break;
-  case  681:
-    l = 0xa1892273a; break;
-  case  682:
-    l = 0xa1d796732; break;
-  case  683:
-    l = 0xa225fa72b; break;
-  case  684:
-    l = 0xa27450724; break;
-  case  685:
-    l = 0xa2c29871c; break;
-  case  686:
-    l = 0xa310d0715; break;
-  case  687:
-    l = 0xa35efa70e; break;
-  case  688:
-    l = 0xa3ad16706; break;
-  case  689:
-    l = 0xa3fb22700; break;
-  case  690:
-    l = 0xa449226f8; break;
-  case  691:
-    l = 0xa497126f0; break;
-  case  692:
-    l = 0xa4e4f26ea; break;
-  case  693:
-    l = 0xa532c66e2; break;
-  case  694:
-    l = 0xa5808a6dc; break;
-  case  695:
-    l = 0xa5ce426d4; break;
-  case  696:
-    l = 0xa61bea6cd; break;
-  case  697:
-    l = 0xa669846c6; break;
-  case  698:
-    l = 0xa6b7106be; break;
-  case  699:
-    l = 0xa7048c6b8; break;
-  case  700:
-    l = 0xa751fc6b1; break;
-  case  701:
-    l = 0xa79f5e6a9; break;
-  case  702:
-    l = 0xa7ecb06a3; break;
-  case  703:
-    l = 0xa839f669b; break;
-  case  704:
-    l = 0xa8872c694; break;
-  case  705:
-    l = 0xa8d45468e; break;
-  case  706:
-    l = 0xa92170686; break;
-  case  707:
-    l = 0xa96e7c680; break;
-  case  708:
-    l = 0xa9bb7c678; break;
-  case  709:
-    l = 0xaa086c672; break;
-  case  710:
-    l = 0xaa555066a; break;
-  case  711:
-    l = 0xaaa224664; break;
-  case  712:
-    l = 0xaaeeec65d; break;
-  case  713:
-    l = 0xab3ba6656; break;
-  case  714:
-    l = 0xab885264f; break;
-  case  715:
-    l = 0xabd4f0648; break;
-  case  716:
-    l = 0xac2180642; break;
-  case  717:
-    l = 0xac6e0463a; break;
-  case  718:
-    l = 0xacba78634; break;
-  case  719:
-    l = 0xad06e062d; break;
-  case  720:
-    l = 0xad533a626; break;
-  case  721:
-    l = 0xad9f8661f; break;
-  case  722:
-    l = 0xadebc4619; break;
-  case  723:
-    l = 0xae37f6612; break;
-  case  724:
-    l = 0xae841a60b; break;
-  case  725:
-    l = 0xaed030604; break;
-  case  726:
-    l = 0xaf1c385fe; break;
-  case  727:
-    l = 0xaf68345f7; break;
-  case  728:
-    l = 0xafb4225f0; break;
-  case  729:
-    l = 0xb000025ea; break;
-  case  730:
-    l = 0xb04bd65e3; break;
-  case  731:
-    l = 0xb0979c5dd; break;
-  case  732:
-    l = 0xb0e3565d5; break;
-  case  733:
-    l = 0xb12f005d0; break;
-  case  734:
-    l = 0xb17aa05c8; break;
-  case  735:
-    l = 0xb1c6305c2; break;
-  case  736:
-    l = 0xb211b45bc; break;
-  case  737:
-    l = 0xb25d2c5b5; break;
-  case  738:
-    l = 0xb2a8965ae; break;
-  case  739:
-    l = 0xb2f3f25a8; break;
-  case  740:
-    l = 0xb33f425a1; break;
-  case  741:
-    l = 0xb38a8459b; break;
-  case  742:
-    l = 0xb3d5ba595; break;
-  case  743:
-    l = 0xb420e458d; break;
-  case  744:
-    l = 0xb46bfe588; break;
-  case  745:
-    l = 0xb4b70e581; break;
-  case  746:
-    l = 0xb5021057a; break;
-  case  747:
-    l = 0xb54d04575; break;
-  case  748:
-    l = 0xb597ee56d; break;
-  case  749:
-    l = 0xb5e2c8568; break;
-  case  750:
-    l = 0xb62d98561; break;
-  case  751:
-    l = 0xb6785a55a; break;
-  case  752:
-    l = 0xb6c30e554; break;
-  case  753:
-    l = 0xb70db654e; break;
-  case  754:
-    l = 0xb75852548; break;
-  case  755:
-    l = 0xb7a2e2541; break;
-  case  756:
-    l = 0xb7ed6453b; break;
-  case  757:
-    l = 0xb837da535; break;
-  case  758:
-    l = 0xb8824452e; break;
-  case  759:
-    l = 0xb8cca0528; break;
-  case  760:
-    l = 0xb916f0522; break;
-  case  761:
-    l = 0xb9613451c; break;
-  case  762:
-    l = 0xb9ab6c515; break;
-  case  763:
-    l = 0xb9f59650f; break;
-  case  764:
-    l = 0xba3fb4509; break;
-  case  765:
-    l = 0xba89c6503; break;
-  case  766:
-    l = 0xbad3cc4fc; break;
-  case  767:
-    l = 0xbb1dc44f7; break;
-  case  768:
-    l = 0xbb67b24f0; break;
-  case  769:
-    l = 0xbbb1924ea; break;
-  case  770:
-    l = 0xbbfb664e4; break;
-  case  771:
-    l = 0xbc452e4de; break;
-  case  772:
-    l = 0xbc8eea4d7; break;
-  case  773:
-    l = 0xbcd8984d2; break;
-  case  774:
-    l = 0xbd223c4cc; break;
-  case  775:
-    l = 0xbd6bd44c5; break;
-  case  776:
-    l = 0xbdb55e4bf; break;
-  case  777:
-    l = 0xbdfedc4ba; break;
-  case  778:
-    l = 0xbe48504b3; break;
-  case  779:
-    l = 0xbe91b64ad; break;
-  case  780:
-    l = 0xbedb104a8; break;
-  case  781:
-    l = 0xbf24604a1; break;
-  case  782:
-    l = 0xbf6da249b; break;
-  case  783:
-    l = 0xbfb6d8495; break;
-  case  784:
-    l = 0xc00002490; break;
-  case  785:
-    l = 0xc04922489; break;
-  case  786:
-    l = 0xc09234483; break;
-  case  787:
-    l = 0xc0db3a47e; break;
-  case  788:
-    l = 0xc12436477; break;
-  case  789:
-    l = 0xc16d24472; break;
-  case  790:
-    l = 0xc1b60846c; break;
-  case  791:
-    l = 0xc1fee0466; break;
-  case  792:
-    l = 0xc247ac45f; break;
-  case  793:
-    l = 0xc2906a45b; break;
-  case  794:
-    l = 0xc2d920454; break;
-  case  795:
-    l = 0xc321c844e; break;
-  case  796:
-    l = 0xc36a64449; break;
-  case  797:
-    l = 0xc3b2f6442; break;
-  case  798:
-    l = 0xc3fb7a43d; break;
-  case  799:
-    l = 0xc443f4437; break;
-  case  800:
-    l = 0xc48c62432; break;
-  case  801:
-    l = 0xc4d4c642b; break;
-  case  802:
-    l = 0xc51d1c426; break;
-  case  803:
-    l = 0xc56568420; break;
-  case  804:
-    l = 0xc5ada841a; break;
-  case  805:
-    l = 0xc5f5dc415; break;
-  case  806:
-    l = 0xc63e0640e; break;
-  case  807:
-    l = 0xc68622409; break;
-  case  808:
-    l = 0xc6ce34404; break;
-  case  809:
-    l = 0xc7163c3fd; break;
-  case  810:
-    l = 0xc75e363f8; break;
-  case  811:
-    l = 0xc7a6263f3; break;
-  case  812:
-    l = 0xc7ee0c3ec; break;
-  case  813:
-    l = 0xc835e43e7; break;
-  case  814:
-    l = 0xc87db23e2; break;
-  case  815:
-    l = 0xc8c5763db; break;
-  case  816:
-    l = 0xc90d2c3d6; break;
-  case  817:
-    l = 0xc954d83d1; break;
-  case  818:
-    l = 0xc99c7a3cb; break;
-  case  819:
-    l = 0xc9e4103c5; break;
-  case  820:
-    l = 0xca2b9a3c0; break;
-  case  821:
-    l = 0xca731a3ba; break;
-  case  822:
-    l = 0xcaba8e3b4; break;
-  case  823:
-    l = 0xcb01f63af; break;
-  case  824:
-    l = 0xcb49543aa; break;
-  case  825:
-    l = 0xcb90a83a4; break;
-  case  826:
-    l = 0xcbd7f039e; break;
-  case  827:
-    l = 0xcc1f2c399; break;
-  case  828:
-    l = 0xcc665e393; break;
-  case  829:
-    l = 0xccad8438e; break;
-  case  830:
-    l = 0xccf4a0389; break;
-  case  831:
-    l = 0xcd3bb2382; break;
-  case  832:
-    l = 0xcd82b637e; break;
-  case  833:
-    l = 0xcdc9b2378; break;
-  case  834:
-    l = 0xce10a2373; break;
-  case  835:
-    l = 0xce578836d; break;
-  case  836:
-    l = 0xce9e62367; break;
-  case  837:
-    l = 0xcee530363; break;
-  case  838:
-    l = 0xcf2bf635d; break;
-  case  839:
-    l = 0xcf72b0357; break;
-  case  840:
-    l = 0xcfb95e352; break;
-  case  841:
-    l = 0xd0000234d; break;
-  case  842:
-    l = 0xd0469c347; break;
-  case  843:
-    l = 0xd08d2a343; break;
-  case  844:
-    l = 0xd0d3b033c; break;
-  case  845:
-    l = 0xd11a28338; break;
-  case  846:
-    l = 0xd16098332; break;
-  case  847:
-    l = 0xd1a6fc32c; break;
-  case  848:
-    l = 0xd1ed54328; break;
-  case  849:
-    l = 0xd233a4322; break;
-  case  850:
-    l = 0xd279e831d; break;
-  case  851:
-    l = 0xd2c022317; break;
-  case  852:
-    l = 0xd30650313; break;
-  case  853:
-    l = 0xd34c7430e; break;
-  case  854:
-    l = 0xd39290307; break;
-  case  855:
-    l = 0xd3d89e303; break;
-  case  856:
-    l = 0xd41ea42fd; break;
-  case  857:
-    l = 0xd4649e2f8; break;
-  case  858:
-    l = 0xd4aa8e2f3; break;
-  case  859:
-    l = 0xd4f0742ee; break;
-  case  860:
-    l = 0xd536502e8; break;
-  case  861:
-    l = 0xd57c202e3; break;
-  case  862:
-    l = 0xd5c1e62de; break;
-  case  863:
-    l = 0xd607a22d9; break;
-  case  864:
-    l = 0xd64d542d4; break;
-  case  865:
-    l = 0xd692fc2cf; break;
-  case  866:
-    l = 0xd6d89a2c9; break;
-  case  867:
-    l = 0xd71e2c2c4; break;
-  case  868:
-    l = 0xd763b42c0; break;
-  case  869:
-    l = 0xd7a9342ba; break;
-  case  870:
-    l = 0xd7eea82b5; break;
-  case  871:
-    l = 0xd834122af; break;
-  case  872:
-    l = 0xd879702ab; break;
-  case  873:
-    l = 0xd8bec62a6; break;
-  case  874:
-    l = 0xd904122a1; break;
-  case  875:
-    l = 0xd9495429b; break;
-  case  876:
-    l = 0xd98e8a297; break;
-  case  877:
-    l = 0xd9d3b8291; break;
-  case  878:
-    l = 0xda18da28c; break;
-  case  879:
-    l = 0xda5df2288; break;
-  case  880:
-    l = 0xdaa302282; break;
-  case  881:
-    l = 0xdae80627e; break;
-  case  882:
-    l = 0xdb2d02278; break;
-  case  883:
-    l = 0xdb71f2273; break;
-  case  884:
-    l = 0xdbb6d826f; break;
-  case  885:
-    l = 0xdbfbb6269; break;
-  case  886:
-    l = 0xdc4088264; break;
-  case  887:
-    l = 0xdc8550260; break;
-  case  888:
-    l = 0xdcca1025a; break;
-  case  889:
-    l = 0xdd0ec4256; break;
-  case  890:
-    l = 0xdd5370251; break;
-  case  891:
-    l = 0xdd981224b; break;
-  case  892:
-    l = 0xdddca8247; break;
-  case  893:
-    l = 0xde2136242; break;
-  case  894:
-    l = 0xde65ba23d; break;
-  case  895:
-    l = 0xdeaa34238; break;
-  case  896:
-    l = 0xdeeea4233; break;
-  case  897:
-    l = 0xdf330a22e; break;
-  case  898:
-    l = 0xdf776622a; break;
-  case  899:
-    l = 0xdfbbba224; break;
-  case  900:
-    l = 0xe00002220; break;
-  case  901:
-    l = 0xe0444221b; break;
-  case  902:
-    l = 0xe08878216; break;
-  case  903:
-    l = 0xe0cca4211; break;
-  case  904:
-    l = 0xe110c620c; break;
-  case  905:
-    l = 0xe154de208; break;
-  case  906:
-    l = 0xe198ee203; break;
-  case  907:
-    l = 0xe1dcf41fe; break;
-  case  908:
-    l = 0xe220f01f9; break;
-  case  909:
-    l = 0xe264e21f4; break;
-  case  910:
-    l = 0xe2a8ca1f0; break;
-  case  911:
-    l = 0xe2ecaa1eb; break;
-  case  912:
-    l = 0xe330801e6; break;
-  case  913:
-    l = 0xe3744c1e1; break;
-  case  914:
-    l = 0xe3b80e1dd; break;
-  case  915:
-    l = 0xe3fbc81d8; break;
-  case  916:
-    l = 0xe43f781d3; break;
-  case  917:
-    l = 0xe4831e1ce; break;
-  case  918:
-    l = 0xe4c6ba1ca; break;
-  case  919:
-    l = 0xe50a4e1c5; break;
-  case  920:
-    l = 0xe54dd81c0; break;
-  case  921:
-    l = 0xe591581bc; break;
-  case  922:
-    l = 0xe5d4d01b6; break;
-  case  923:
-    l = 0xe6183c1b3; break;
-  case  924:
-    l = 0xe65ba21ad; break;
-  case  925:
-    l = 0xe69efc1a9; break;
-  case  926:
-    l = 0xe6e24e1a4; break;
-  case  927:
-    l = 0xe725961a0; break;
-  case  928:
-    l = 0xe768d619b; break;
-  case  929:
-    l = 0xe7ac0c196; break;
-  case  930:
-    l = 0xe7ef38192; break;
-  case  931:
-    l = 0xe8325c18d; break;
-  case  932:
-    l = 0xe87576189; break;
-  case  933:
-    l = 0xe8b888184; break;
-  case  934:
-    l = 0xe8fb9017f; break;
-  case  935:
-    l = 0xe93e8e17b; break;
-  case  936:
-    l = 0xe98184176; break;
-  case  937:
-    l = 0xe9c470171; break;
-  case  938:
-    l = 0xea075216e; break;
-  case  939:
-    l = 0xea4a2e168; break;
-  case  940:
-    l = 0xea8cfe164; break;
-  case  941:
-    l = 0xeacfc615f; break;
-  case  942:
-    l = 0xeb128415b; break;
-  case  943:
-    l = 0xeb553a156; break;
-  case  944:
-    l = 0xeb97e6152; break;
-  case  945:
-    l = 0xebda8a14e; break;
-  case  946:
-    l = 0xec1d26148; break;
-  case  947:
-    l = 0xec5fb6145; break;
-  case  948:
-    l = 0xeca24013f; break;
-  case  949:
-    l = 0xece4be13c; break;
-  case  950:
-    l = 0xed2736137; break;
-  case  951:
-    l = 0xed69a4132; break;
-  case  952:
-    l = 0xedac0812e; break;
-  case  953:
-    l = 0xedee64129; break;
-  case  954:
-    l = 0xee30b6125; break;
-  case  955:
-    l = 0xee7300121; break;
-  case  956:
-    l = 0xeeb54211c; break;
-  case  957:
-    l = 0xeef77a118; break;
-  case  958:
-    l = 0xef39aa113; break;
-  case  959:
-    l = 0xef7bd010f; break;
-  case  960:
-    l = 0xefbdee10a; break;
-  case  961:
-    l = 0xf00002106; break;
-  case  962:
-    l = 0xf0420e102; break;
-  case  963:
-    l = 0xf084120fd; break;
-  case  964:
-    l = 0xf0c60c0f9; break;
-  case  965:
-    l = 0xf107fe0f5; break;
-  case  966:
-    l = 0xf149e80f0; break;
-  case  967:
-    l = 0xf18bc80ec; break;
-  case  968:
-    l = 0xf1cda00e7; break;
-  case  969:
-    l = 0xf20f6e0e3; break;
-  case  970:
-    l = 0xf251340df; break;
-  case  971:
-    l = 0xf292f20da; break;
-  case  972:
-    l = 0xf2d4a60d7; break;
-  case  973:
-    l = 0xf316540d1; break;
-  case  974:
-    l = 0xf357f60ce; break;
-  case  975:
-    l = 0xf399920c9; break;
-  case  976:
-    l = 0xf3db240c5; break;
-  case  977:
-    l = 0xf41cae0c0; break;
-  case  978:
-    l = 0xf45e2e0bd; break;
-  case  979:
-    l = 0xf49fa80b8; break;
-  case  980:
-    l = 0xf4e1180b4; break;
-  case  981:
-    l = 0xf522800af; break;
-  case  982:
-    l = 0xf563de0ab; break;
-  case  983:
-    l = 0xf5a5340a7; break;
-  case  984:
-    l = 0xf5e6820a3; break;
-  case  985:
-    l = 0xf627c809e; break;
-  case  986:
-    l = 0xf6690409b; break;
-  case  987:
-    l = 0xf6aa3a096; break;
-  case  988:
-    l = 0xf6eb66091; break;
-  case  989:
-    l = 0xf72c8808e; break;
-  case  990:
-    l = 0xf76da4089; break;
-  case  991:
-    l = 0xf7aeb6086; break;
-  case  992:
-    l = 0xf7efc2081; break;
-  case  993:
-    l = 0xf830c407c; break;
-  case  994:
-    l = 0xf871bc079; break;
-  case  995:
-    l = 0xf8b2ae074; break;
-  case  996:
-    l = 0xf8f396071; break;
-  case  997:
-    l = 0xf9347806c; break;
-  case  998:
-    l = 0xf97550068; break;
-  case  999:
-    l = 0xf9b620064; break;
-  case 1000:
-    l = 0xf9f6e805f; break;
-  case 1001:
-    l = 0xfa37a605c; break;
-  case 1002:
-    l = 0xfa785e057; break;
-  case 1003:
-    l = 0xfab90c053; break;
-  case 1004:
-    l = 0xfaf9b204f; break;
-  case 1005:
-    l = 0xfb3a5004b; break;
-  case 1006:
-    l = 0xfb7ae6047; break;
-  case 1007:
-    l = 0xfbbb74043; break;
-  case 1008:
-    l = 0xfbfbfa03f; break;
-  case 1009:
-    l = 0xfc3c7803b; break;
-  case 1010:
-    l = 0xfc7cee036; break;
-  case 1011:
-    l = 0xfcbd5a033; break;
-  case 1012:
-    l = 0xfcfdc002e; break;
-  case 1013:
-    l = 0xfd3e1c02a; break;
-  case 1014:
-    l = 0xfd7e70027; break;
-  case 1015:
-    l = 0xfdbebe022; break;
-  case 1016:
-    l = 0xfdff0201e; break;
-  case 1017:
-    l = 0xfe3f3e01a; break;
-  case 1018:
-    l = 0xfe7f72016; break;
-  case 1019:
-    l = 0xfebf9e012; break;
-  case 1020:
-    l = 0xfeffc200e; break;
-  case 1021:
-    l = 0xff3fde00a; break;
-  case 1022:
-    l = 0xff7ff2006; break;
-  case 1023:
-    l = 0xffbffe002; break;
-  default:
-    l = 0xfffffffff; break; //通過しないはず
-  }
-  return (l);
-}
+static long long unsigned int make_l[MAX*2] = {
+  0x000000001ffd,
+  0x000ffe801ff4,
+  0x001ff8801fec,
+  0x002fee801fe4,
+  0x003fe0801fdc,
+  0x004fce801fd4,
+  0x005fb8801fcd,
+  0x006f9f001fc4,
+  0x007f81001fbd,
+  0x008f5f801fb5,
+  0x009f3a001fae,
+  0x00af11001fa5,
+  0x00bee3801f9e,
+  0x00ceb2801f96,
+  0x00de7d801f8e,
+  0x00ee44801f87,
+  0x00fe08001f7f,
+  0x010dc7801f78,
+  0x011d83801f70,
+  0x012d3b801f68,
+  0x013cef801f61,
+  0x014ca0001f59,
+  0x015c4c801f52,
+  0x016bf5801f4a,
+  0x017b9a801f43,
+  0x018b3c001f3b,
+  0x019ad9801f34,
+  0x01aa73801f2c,
+  0x01ba09801f25,
+  0x01c99c001f1e,
+  0x01d92b001f17,
+  0x01e8b6801f0f,
+  0x01f83e001f07,
+  0x0207c1801f01,
+  0x021742001ef9,
+  0x0226be801ef2,
+  0x023637801eeb,
+  0x0245ad001ee3,
+  0x02551e801edd,
+  0x02648d001ed5,
+  0x0273f7801ece,
+  0x02835e801ec7,
+  0x0292c2001ec0,
+  0x02a222001eb8,
+  0x02b17e001eb2,
+  0x02c0d7001eab,
+  0x02d02c801ea3,
+  0x02df7e001e9d,
+  0x02eecc801e95,
+  0x02fe17001e8f,
+  0x030d5e801e87,
+  0x031ca2001e81,
+  0x032be2801e7a,
+  0x033b1f801e73,
+  0x034a59001e6c,
+  0x03598f001e65,
+  0x0368c1801e5e,
+  0x0377f0801e58,
+  0x03871c801e50,
+  0x039644801e4a,
+  0x03a569801e43,
+  0x03b48b001e3c,
+  0x03c3a9001e36,
+  0x03d2c4001e2f,
+  0x03e1db801e28,
+  0x03f0ef801e21,
+  0x040000001e1b,
+  0x040f0d801e14,
+  0x041e17801e0e,
+  0x042d1e801e07,
+  0x043c22001e00,
+  0x044b22001dfa,
+  0x045a1f001df3,
+  0x046918801dec,
+  0x04780e801de6,
+  0x048701801de0,
+  0x0495f1801dd9,
+  0x04a4de001dd3,
+  0x04b3c7801dcc,
+  0x04c2ad801dc5,
+  0x04d190001dbf,
+  0x04e06f801db9,
+  0x04ef4c001db3,
+  0x04fe25801dac,
+  0x050cfb801da5,
+  0x051bce001d9f,
+  0x052a9d801d99,
+  0x05396a001d93,
+  0x054833801d8c,
+  0x0556f9801d86,
+  0x0565bc801d80,
+  0x05747c801d79,
+  0x058339001d74,
+  0x0591f3001d6d,
+  0x05a0a9801d66,
+  0x05af5c801d61,
+  0x05be0d001d5a,
+  0x05ccba001d55,
+  0x05db64801d4e,
+  0x05ea0b801d48,
+  0x05f8af801d42,
+  0x060750801d3b,
+  0x0615ee001d36,
+  0x062489001d2f,
+  0x063320801d2a,
+  0x0641b5801d23,
+  0x065047001d1e,
+  0x065ed6001d17,
+  0x066d61801d12,
+  0x067bea801d0b,
+  0x068a70001d05,
+  0x0698f2801d00,
+  0x06a772801cf9,
+  0x06b5ef001cf4,
+  0x06c469001cee,
+  0x06d2e0001ce7,
+  0x06e153801ce2,
+  0x06efc4801cdc,
+  0x06fe32801cd6,
+  0x070c9d801cd1,
+  0x071b06001cca,
+  0x07296b001cc5,
+  0x0737cd801cbf,
+  0x07462d001cb9,
+  0x075489801cb3,
+  0x0762e3001cad,
+  0x077139801ca8,
+  0x077f8d801ca2,
+  0x078dde801c9d,
+  0x079c2d001c96,
+  0x07aa78001c91,
+  0x07b8c0801c8b,
+  0x07c706001c86,
+  0x07d549001c80,
+  0x07e389001c7a,
+  0x07f1c6001c74,
+  0x080000001c6f,
+  0x080e37801c6a,
+  0x081c6c801c63,
+  0x082a9e001c5f,
+  0x0838cd801c58,
+  0x0846f9801c53,
+  0x085523001c4e,
+  0x08634a001c48,
+  0x08716e001c42,
+  0x087f8f001c3d,
+  0x088dad801c38,
+  0x089bc9801c32,
+  0x08a9e2801c2c,
+  0x08b7f8801c27,
+  0x08c60c001c22,
+  0x08d41d001c1c,
+  0x08e22b001c17,
+  0x08f036801c12,
+  0x08fe3f801c0c,
+  0x090c45801c06,
+  0x091a48801c01,
+  0x092849001bfc,
+  0x093647001bf7,
+  0x094442801bf1,
+  0x09523b001bec,
+  0x096031001be7,
+  0x096e24801be1,
+  0x097c15001bdc,
+  0x098a03001bd7,
+  0x0997ee801bd1,
+  0x09a5d7001bcc,
+  0x09b3bd001bc7,
+  0x09c1a0801bc2,
+  0x09cf81801bbd,
+  0x09dd60001bb7,
+  0x09eb3b801bb2,
+  0x09f914801bad,
+  0x0a06eb001ba8,
+  0x0a14bf001ba3,
+  0x0a2290801b9d,
+  0x0a305f001b98,
+  0x0a3e2b001b94,
+  0x0a4bf5001b8e,
+  0x0a59bc001b89,
+  0x0a6780801b84,
+  0x0a7542801b7f,
+  0x0a8302001b79,
+  0x0a90be801b75,
+  0x0a9e79001b70,
+  0x0aac31001b6a,
+  0x0ab9e6001b66,
+  0x0ac799001b61,
+  0x0ad549801b5b,
+  0x0ae2f7001b57,
+  0x0af0a2801b51,
+  0x0afe4b001b4d,
+  0x0b0bf1801b48,
+  0x0b1995801b43,
+  0x0b2737001b3d,
+  0x0b34d5801b39,
+  0x0b4272001b34,
+  0x0b500c001b2f,
+  0x0b5da3801b2a,
+  0x0b6b38801b26,
+  0x0b78cb801b20,
+  0x0b865b801b1b,
+  0x0b93e9001b17,
+  0x0ba174801b12,
+  0x0baefd801b0d,
+  0x0bbc84001b08,
+  0x0bca08001b03,
+  0x0bd789801aff,
+  0x0be509001af9,
+  0x0bf285801af5,
+  0x0c0000001af0,
+  0x0c0d78001aec,
+  0x0c1aee001ae6,
+  0x0c2861001ae2,
+  0x0c35d2001add,
+  0x0c4340801ad9,
+  0x0c50ad001ad3,
+  0x0c5e16801acf,
+  0x0c6b7e001acb,
+  0x0c78e3801ac5,
+  0x0c8646001ac1,
+  0x0c93a6801abc,
+  0x0ca104801ab8,
+  0x0cae60801ab3,
+  0x0cbbba001aae,
+  0x0cc911001aaa,
+  0x0cd666001aa5,
+  0x0ce3b8801aa0,
+  0x0cf108801a9c,
+  0x0cfe56801a97,
+  0x0d0ba2001a93,
+  0x0d18eb801a8e,
+  0x0d2632801a8a,
+  0x0d3377801a84,
+  0x0d40b9801a81,
+  0x0d4dfa001a7c,
+  0x0d5b38001a77,
+  0x0d6873801a73,
+  0x0d75ad001a6e,
+  0x0d82e4001a6a,
+  0x0d9019001a65,
+  0x0d9d4b801a61,
+  0x0daa7c001a5c,
+  0x0db7aa001a58,
+  0x0dc4d6001a53,
+  0x0dd1ff801a4f,
+  0x0ddf27001a4b,
+  0x0dec4c801a46,
+  0x0df96f801a42,
+  0x0e0690801a3d,
+  0x0e13af001a39,
+  0x0e20cb801a34,
+  0x0e2de5801a30,
+  0x0e3afd801a2c,
+  0x0e4813801a27,
+  0x0e5527001a23,
+  0x0e6238801a1e,
+  0x0e6f47801a1b,
+  0x0e7c55001a16,
+  0x0e8960001a11,
+  0x0e9668801a0d,
+  0x0ea36f001a09,
+  0x0eb073801a05,
+  0x0ebd76001a00,
+  0x0eca760019fc,
+  0x0ed7740019f8,
+  0x0ee4700019f3,
+  0x0ef1698019f0,
+  0x0efe618019eb,
+  0x0f0b570019e6,
+  0x0f184a0019e3,
+  0x0f253b8019de,
+  0x0f322a8019da,
+  0x0f3f178019d6,
+  0x0f4c028019d2,
+  0x0f58eb8019cd,
+  0x0f65d20019c9,
+  0x0f72b68019c5,
+  0x0f7f990019c1,
+  0x0f8c798019bd,
+  0x0f99580019b8,
+  0x0fa6340019b5,
+  0x0fb30e8019b0,
+  0x0fbfe68019ac,
+  0x0fccbc8019a8,
+  0x0fd9908019a4,
+  0x0fe6628019a0,
+  0x0ff33280199b,
+  0x100000001998,
+  0x100ccc001993,
+  0x101995801990,
+  0x10265d80198b,
+  0x103323001987,
+  0x103fe6801983,
+  0x104ca8001980,
+  0x10596800197b,
+  0x106625801977,
+  0x1072e1001973,
+  0x107f9a80196f,
+  0x108c5200196b,
+  0x109907801967,
+  0x10a5bb001963,
+  0x10b26c80195f,
+  0x10bf1c00195b,
+  0x10cbc9801957,
+  0x10d875001953,
+  0x10e51e80194f,
+  0x10f1c600194b,
+  0x10fe6b801947,
+  0x110b0f001944,
+  0x1117b100193f,
+  0x11245080193b,
+  0x1130ee001938,
+  0x113d8a001933,
+  0x114a23801930,
+  0x1156bb80192c,
+  0x116351801928,
+  0x116fe5801924,
+  0x117c77801920,
+  0x11890780191c,
+  0x119595801919,
+  0x11a222001914,
+  0x11aeac001911,
+  0x11bb3480190d,
+  0x11c7bb001909,
+  0x11d43f801905,
+  0x11e0c2001901,
+  0x11ed428018fe,
+  0x11f9c18018fa,
+  0x12063e8018f6,
+  0x1212b98018f2,
+  0x121f328018ee,
+  0x122ba98018eb,
+  0x12381f0018e7,
+  0x1244928018e3,
+  0x1251040018df,
+  0x125d738018db,
+  0x1269e10018d8,
+  0x12764d0018d4,
+  0x1282b70018d1,
+  0x128f1f8018cc,
+  0x129b858018c9,
+  0x12a7ea0018c5,
+  0x12b44c8018c2,
+  0x12c0ad8018bd,
+  0x12cd0c0018bb,
+  0x12d9698018b6,
+  0x12e5c48018b3,
+  0x12f21e0018af,
+  0x12fe758018ab,
+  0x130acb0018a8,
+  0x13171f0018a4,
+  0x1323710018a0,
+  0x132fc100189d,
+  0x133c0f801899,
+  0x13485c001895,
+  0x1354a6801892,
+  0x1360ef80188e,
+  0x136d3680188b,
+  0x13797c001887,
+  0x1385bf801883,
+  0x139201001880,
+  0x139e4100187d,
+  0x13aa7f801878,
+  0x13b6bb801875,
+  0x13c2f6001872,
+  0x13cf2f00186e,
+  0x13db6600186a,
+  0x13e79b001867,
+  0x13f3ce801863,
+  0x140000001860,
+  0x140c3000185c,
+  0x14185e001859,
+  0x14248a801855,
+  0x1430b5001852,
+  0x143cde00184e,
+  0x14490500184b,
+  0x14552a801847,
+  0x14614e001843,
+  0x146d6f801841,
+  0x14799000183c,
+  0x1485ae001839,
+  0x1491ca801836,
+  0x149de5801833,
+  0x14a9ff00182e,
+  0x14b61600182c,
+  0x14c22c001828,
+  0x14ce40001824,
+  0x14da52001821,
+  0x14e66280181e,
+  0x14f27180181a,
+  0x14fe7e801817,
+  0x150a8a001813,
+  0x151693801810,
+  0x15229b80180d,
+  0x152ea2001809,
+  0x153aa6801806,
+  0x1546a9801802,
+  0x1552aa801800,
+  0x155eaa8017fb,
+  0x156aa80017f9,
+  0x1576a48017f5,
+  0x15829f0017f1,
+  0x158e978017ee,
+  0x159a8e8017eb,
+  0x15a6840017e8,
+  0x15b2780017e4,
+  0x15be6a0017e1,
+  0x15ca5a8017de,
+  0x15d6498017da,
+  0x15e2368017d7,
+  0x15ee220017d4,
+  0x15fa0c0017d0,
+  0x1605f40017cd,
+  0x1611da8017ca,
+  0x161dbf8017c6,
+  0x1629a28017c4,
+  0x1635848017c0,
+  0x1641648017bc,
+  0x164d428017ba,
+  0x16591f8017b6,
+  0x1664fa8017b3,
+  0x1670d40017af,
+  0x167cab8017ad,
+  0x1688820017a9,
+  0x1694568017a6,
+  0x16a0298017a3,
+  0x16abfb00179f,
+  0x16b7ca80179c,
+  0x16c39880179a,
+  0x16cf65801795,
+  0x16db30001793,
+  0x16e6f9801790,
+  0x16f2c180178c,
+  0x16fe87801789,
+  0x170a4c001786,
+  0x17160f001783,
+  0x1721d080177f,
+  0x172d9000177d,
+  0x17394e801779,
+  0x17450b001776,
+  0x1750c6001773,
+  0x175c7f801770,
+  0x17683780176c,
+  0x1773ed80176a,
+  0x177fa2801766,
+  0x178b55801764,
+  0x179707801760,
+  0x17a2b780175d,
+  0x17ae6600175a,
+  0x17ba13001757,
+  0x17c5be801753,
+  0x17d168001751,
+  0x17dd1080174d,
+  0x17e8b700174b,
+  0x17f45c801747,
+  0x180000001744,
+  0x180ba2001742,
+  0x18174300173e,
+  0x1822e200173b,
+  0x182e7f801738,
+  0x183a1b801735,
+  0x1845b6001732,
+  0x18514f00172f,
+  0x185ce680172b,
+  0x18687c001729,
+  0x187410801726,
+  0x187fa3801723,
+  0x188b35001720,
+  0x1896c500171c,
+  0x18a25300171a,
+  0x18ade0001717,
+  0x18b96b801713,
+  0x18c4f5001711,
+  0x18d07d80170e,
+  0x18dc0480170a,
+  0x18e789801708,
+  0x18f30d801705,
+  0x18fe90001702,
+  0x190a110016fe,
+  0x1915900016fc,
+  0x19210e0016f9,
+  0x192c8a8016f6,
+  0x1938058016f3,
+  0x19437f0016f0,
+  0x194ef70016ed,
+  0x195a6d8016ea,
+  0x1965e28016e7,
+  0x1971560016e5,
+  0x197cc88016e1,
+  0x1988390016de,
+  0x1993a80016dc,
+  0x199f160016d8,
+  0x19aa820016d6,
+  0x19b5ed0016d3,
+  0x19c1568016d0,
+  0x19ccbe8016cd,
+  0x19d8250016ca,
+  0x19e38a0016c7,
+  0x19eeed8016c4,
+  0x19fa4f8016c2,
+  0x1a05b08016be,
+  0x1a110f8016bc,
+  0x1a1c6d8016b9,
+  0x1a27ca0016b6,
+  0x1a33250016b3,
+  0x1a3e7e8016b0,
+  0x1a49d68016ad,
+  0x1a552d0016ab,
+  0x1a60828016a7,
+  0x1a6bd60016a5,
+  0x1a77288016a2,
+  0x1a827a002d3b,
+  0x1a9917802d31,
+  0x1aafb0002d25,
+  0x1ac642802d1a,
+  0x1adccf802d0e,
+  0x1af356802d04,
+  0x1b09d8802cf8,
+  0x1b2054802cee,
+  0x1b36cb802ce2,
+  0x1b4d3c802cd7,
+  0x1b63a8002ccc,
+  0x1b7a0e002cc2,
+  0x1b906f002cb6,
+  0x1ba6ca002cab,
+  0x1bbd1f802ca1,
+  0x1bd370002c96,
+  0x1be9bb002c8b,
+  0x1c0000802c80,
+  0x1c1640802c75,
+  0x1c2c7b002c6b,
+  0x1c42b0802c60,
+  0x1c58e0802c55,
+  0x1c6f0b002c4b,
+  0x1c8530802c40,
+  0x1c9b50802c36,
+  0x1cb16b802c2b,
+  0x1cc781002c21,
+  0x1cdd91802c16,
+  0x1cf39c802c0b,
+  0x1d09a2002c02,
+  0x1d1fa3002bf7,
+  0x1d359e802bec,
+  0x1d4b94802be2,
+  0x1d6185802bd8,
+  0x1d7771802bce,
+  0x1d8d58802bc3,
+  0x1da33a002bb9,
+  0x1db916802baf,
+  0x1dceee002ba5,
+  0x1de4c0802b9b,
+  0x1dfa8e002b90,
+  0x1e1056002b87,
+  0x1e2619802b7c,
+  0x1e3bd7802b72,
+  0x1e5190802b69,
+  0x1e6745002b5e,
+  0x1e7cf4002b55,
+  0x1e929e802b4a,
+  0x1ea843802b41,
+  0x1ebde4002b37,
+  0x1ed37f802b2d,
+  0x1ee916002b23,
+  0x1efea7802b19,
+  0x1f1434002b10,
+  0x1f29bc002b06,
+  0x1f3f3f002afc,
+  0x1f54bd002af2,
+  0x1f6a36002ae9,
+  0x1f7faa802adf,
+  0x1f951a002ad6,
+  0x1faa85002acc,
+  0x1fbfeb002ac2,
+  0x1fd54c002ab9,
+  0x1feaa8802ab0,
+  0x200000802aa6,
+  0x201553802a9c,
+  0x202aa1802a93,
+  0x203feb002a8a,
+  0x205530002a80,
+  0x206a70002a77,
+  0x207fab802a6d,
+  0x2094e2002a65,
+  0x20aa14802a5b,
+  0x20bf42002a51,
+  0x20d46a802a49,
+  0x20e98f002a3f,
+  0x20feae802a36,
+  0x2113c9802a2d,
+  0x2128e0002a24,
+  0x213df2002a1a,
+  0x2152ff002a12,
+  0x216808002a08,
+  0x217d0c0029ff,
+  0x21920b8029f7,
+  0x21a7070029ed,
+  0x21bbfd8029e5,
+  0x21d0f00029db,
+  0x21e5dd8029d2,
+  0x21fac68029ca,
+  0x220fab8029c0,
+  0x22248b8029b8,
+  0x2239678029af,
+  0x224e3f0029a6,
+  0x22631200299e,
+  0x2277e1002994,
+  0x228cab00298c,
+  0x22a171002983,
+  0x22b63280297a,
+  0x22caef802971,
+  0x22dfa8002969,
+  0x22f45c802961,
+  0x23090d002957,
+  0x231db880294f,
+  0x233260002946,
+  0x23470300293e,
+  0x235ba2002936,
+  0x23703d00292c,
+  0x2384d3002924,
+  0x23996500291c,
+  0x23adf3002913,
+  0x23c27c80290b,
+  0x23d702002903,
+  0x23eb838028fa,
+  0x2400008028f1,
+  0x2414790028e9,
+  0x2428ed8028e1,
+  0x243d5e0028d9,
+  0x2451ca8028d0,
+  0x2466328028c8,
+  0x247a968028bf,
+  0x248ef60028b8,
+  0x24a3520028af,
+  0x24b7a98028a7,
+  0x24cbfd00289f,
+  0x24e04c802896,
+  0x24f49780288f,
+  0x2508df002886,
+  0x251d2200287e,
+  0x253161002876,
+  0x25459c00286e,
+  0x2559d3002866,
+  0x256e0600285e,
+  0x258235002856,
+  0x25966000284e,
+  0x25aa87002846,
+  0x25beaa00283e,
+  0x25d2c9002836,
+  0x25e6e400282e,
+  0x25fafb002826,
+  0x260f0e00281f,
+  0x26231d802816,
+  0x26372880280f,
+  0x264b30002806,
+  0x265f330027ff,
+  0x2673328027f7,
+  0x26872e0027f0,
+  0x269b260027e7,
+  0x26af198027e0,
+  0x26c3098027d8,
+  0x26d6f58027d1,
+  0x26eade0027c8,
+  0x26fec20027c1,
+  0x2712a28027ba,
+  0x27267f8027b1,
+  0x273a580027aa,
+  0x274e2d0027a3,
+  0x2761fe80279b,
+  0x2775cc002793,
+  0x27899580278c,
+  0x279d5b802784,
+  0x27b11d80277c,
+  0x27c4db802776,
+  0x27d89680276d,
+  0x27ec4d002766,
+  0x28000000275f,
+  0x2813af802757,
+  0x28275b002750,
+  0x283b03002749,
+  0x284ea7802741,
+  0x28624800273a,
+  0x2875e5002732,
+  0x28897e00272b,
+  0x289d13802724,
+  0x28b0a580271c,
+  0x28c433802715,
+  0x28d7be00270e,
+  0x28eb45002706,
+  0x28fec8002700,
+  0x2912480026f8,
+  0x2925c40026f0,
+  0x29393c0026ea,
+  0x294cb10026e2,
+  0x2960220026dc,
+  0x2973900026d4,
+  0x2986fa0026cd,
+  0x299a608026c6,
+  0x29adc38026be,
+  0x29c1228026b8,
+  0x29d47e8026b1,
+  0x29e7d70026a9,
+  0x29fb2b8026a3,
+  0x2a0e7d00269b,
+  0x2a21ca802694,
+  0x2a351480268e,
+  0x2a485b802686,
+  0x2a5b9e802680,
+  0x2a6ede802678,
+  0x2a821a802672,
+  0x2a955380266a,
+  0x2aa888802664,
+  0x2abbba80265d,
+  0x2acee9002656,
+  0x2ae21400264f,
+  0x2af53b802648,
+  0x2b085f802642,
+  0x2b1b8080263a,
+  0x2b2e9d802634,
+  0x2b41b780262d,
+  0x2b54ce002626,
+  0x2b67e100261f,
+  0x2b7af0802619,
+  0x2b8dfd002612,
+  0x2ba10600260b,
+  0x2bb40b802604,
+  0x2bc70d8025fe,
+  0x2bda0c8025f7,
+  0x2bed080025f0,
+  0x2c00000025ea,
+  0x2c12f50025e3,
+  0x2c25e68025dd,
+  0x2c38d50025d5,
+  0x2c4bbf8025d0,
+  0x2c5ea78025c8,
+  0x2c718b8025c2,
+  0x2c846c8025bc,
+  0x2c974a8025b5,
+  0x2caa250025ae,
+  0x2cbcfc0025a8,
+  0x2ccfd00025a1,
+  0x2ce2a080259b,
+  0x2cf56e002595,
+  0x2d083880258d,
+  0x2d1aff002588,
+  0x2d2dc3002581,
+  0x2d408380257a,
+  0x2d5340802575,
+  0x2d65fb00256d,
+  0x2d78b1802568,
+  0x2d8b65802561,
+  0x2d9e1600255a,
+  0x2db0c3002554,
+  0x2dc36d00254e,
+  0x2dd614002548,
+  0x2de8b8002541,
+  0x2dfb5880253b,
+  0x2e0df6002535,
+  0x2e209080252e,
+  0x2e3327802528,
+  0x2e45bb802522,
+  0x2e584c80251c,
+  0x2e6ada802515,
+  0x2e7d6500250f,
+  0x2e8fec802509,
+  0x2ea271002503,
+  0x2eb4f28024fc,
+  0x2ec7708024f7,
+  0x2ed9ec0024f0,
+  0x2eec640024ea,
+  0x2efed90024e4,
+  0x2f114b0024de,
+  0x2f23ba0024d7,
+  0x2f36258024d2,
+  0x2f488e8024cc,
+  0x2f5af48024c5,
+  0x2f6d570024bf,
+  0x2f7fb68024ba,
+  0x2f92138024b3,
+  0x2fa46d0024ad,
+  0x2fb6c38024a8,
+  0x2fc9178024a1,
+  0x2fdb6800249b,
+  0x2fedb5802495,
+  0x300000002490,
+  0x301248002489,
+  0x30248c802483,
+  0x3036ce00247e,
+  0x30490d002477,
+  0x305b48802472,
+  0x306d8180246c,
+  0x307fb7802466,
+  0x3091ea80245f,
+  0x30a41a00245b,
+  0x30b647802454,
+  0x30c87180244e,
+  0x30da98802449,
+  0x30ecbd002442,
+  0x30fede00243d,
+  0x3110fc802437,
+  0x312318002432,
+  0x31353100242b,
+  0x314746802426,
+  0x315959802420,
+  0x316b6980241a,
+  0x317d76802415,
+  0x318f8100240e,
+  0x31a188002409,
+  0x31b38c802404,
+  0x31c58e8023fd,
+  0x31d78d0023f8,
+  0x31e9890023f3,
+  0x31fb828023ec,
+  0x320d788023e7,
+  0x321f6c0023e2,
+  0x32315d0023db,
+  0x32434a8023d6,
+  0x3255358023d1,
+  0x32671e0023cb,
+  0x3279038023c5,
+  0x328ae60023c0,
+  0x329cc60023ba,
+  0x32aea30023b4,
+  0x32c07d0023af,
+  0x32d2548023aa,
+  0x32e4298023a4,
+  0x32f5fb80239e,
+  0x3307ca802399,
+  0x331997002393,
+  0x332b6080238e,
+  0x333d27802389,
+  0x334eec002382,
+  0x3360ad00237e,
+  0x33726c002378,
+  0x338428002373,
+  0x3395e180236d,
+  0x33a798002367,
+  0x33b94b802363,
+  0x33cafd00235d,
+  0x33dcab802357,
+  0x33ee57002352,
+  0x34000000234d,
+  0x3411a6802347,
+  0x34234a002343,
+  0x3434eb80233c,
+  0x344689802338,
+  0x345825802332,
+  0x3469be80232c,
+  0x347b54802328,
+  0x348ce8802322,
+  0x349e7980231d,
+  0x34b008002317,
+  0x34c193802313,
+  0x34d31c80230e,
+  0x34e4a3802307,
+  0x34f627002303,
+  0x3507a88022fd,
+  0x3519270022f8,
+  0x352aa30022f3,
+  0x353c1c8022ee,
+  0x354d938022e8,
+  0x355f078022e3,
+  0x3570790022de,
+  0x3581e80022d9,
+  0x3593548022d4,
+  0x35a4be8022cf,
+  0x35b6260022c9,
+  0x35c78a8022c4,
+  0x35d8ec8022c0,
+  0x35ea4c8022ba,
+  0x35fba98022b5,
+  0x360d040022af,
+  0x361e5b8022ab,
+  0x362fb10022a6,
+  0x3641040022a1,
+  0x36525480229b,
+  0x3663a2002297,
+  0x3674ed802291,
+  0x36863600228c,
+  0x36977c002288,
+  0x36a8c0002282,
+  0x36ba0100227e,
+  0x36cb40002278,
+  0x36dc7c002273,
+  0x36edb580226f,
+  0x36feed002269,
+  0x371021802264,
+  0x372153802260,
+  0x37328380225a,
+  0x3743b0802256,
+  0x3754db802251,
+  0x37660400224b,
+  0x377729802247,
+  0x37884d002242,
+  0x37996e00223d,
+  0x37aa8c802238,
+  0x37bba8802233,
+  0x37ccc200222e,
+  0x37ddd900222a,
+  0x37eeee002224,
+  0x380000002220,
+  0x38111000221b,
+  0x38221d802216,
+  0x383328802211,
+  0x38443100220c,
+  0x385537002208,
+  0x38663b002203,
+  0x38773c8021fe,
+  0x38883b8021f9,
+  0x3899380021f4,
+  0x38aa320021f0,
+  0x38bb2a0021eb,
+  0x38cc1f8021e6,
+  0x38dd128021e1,
+  0x38ee030021dd,
+  0x38fef18021d8,
+  0x390fdd8021d3,
+  0x3920c70021ce,
+  0x3931ae0021ca,
+  0x3942930021c5,
+  0x3953758021c0,
+  0x3964558021bc,
+  0x3975338021b6,
+  0x39860e8021b3,
+  0x3996e80021ad,
+  0x39a7be8021a9,
+  0x39b8930021a4,
+  0x39c9650021a0,
+  0x39da3500219b,
+  0x39eb02802196,
+  0x39fbcd802192,
+  0x3a0c9680218d,
+  0x3a1d5d002189,
+  0x3a2e21802184,
+  0x3a3ee380217f,
+  0x3a4fa300217b,
+  0x3a6060802176,
+  0x3a711b802171,
+  0x3a81d400216e,
+  0x3a928b002168,
+  0x3aa33f002164,
+  0x3ab3f100215f,
+  0x3ac4a080215b,
+  0x3ad54e002156,
+  0x3ae5f9002152,
+  0x3af6a200214e,
+  0x3b0749002148,
+  0x3b17ed002145,
+  0x3b288f80213f,
+  0x3b392f00213c,
+  0x3b49cd002137,
+  0x3b5a68802132,
+  0x3b6b0180212e,
+  0x3b7b98802129,
+  0x3b8c2d002125,
+  0x3b9cbf802121,
+  0x3bad5000211c,
+  0x3bbdde002118,
+  0x3bce6a002113,
+  0x3bdef380210f,
+  0x3bef7b00210a,
+  0x3c0000002106,
+  0x3c1083002102,
+  0x3c21040020fd,
+  0x3c31828020f9,
+  0x3c41ff0020f5,
+  0x3c52798020f0,
+  0x3c62f18020ec,
+  0x3c73678020e7,
+  0x3c83db0020e3,
+  0x3c944c8020df,
+  0x3ca4bc0020da,
+  0x3cb5290020d7,
+  0x3cc5948020d1,
+  0x3cd5fd0020ce,
+  0x3ce6640020c9,
+  0x3cf6c88020c5,
+  0x3d072b0020c0,
+  0x3d178b0020bd,
+  0x3d27e98020b8,
+  0x3d38458020b4,
+  0x3d489f8020af,
+  0x3d58f70020ab,
+  0x3d694c8020a7,
+  0x3d79a00020a3,
+  0x3d89f180209e,
+  0x3d9a4080209b,
+  0x3daa8e002096,
+  0x3dbad9002091,
+  0x3dcb2180208e,
+  0x3ddb68802089,
+  0x3debad002086,
+  0x3dfbf0002081,
+  0x3e0c3080207c,
+  0x3e1c6e802079,
+  0x3e2cab002074,
+  0x3e3ce5002071,
+  0x3e4d1d80206c,
+  0x3e5d53802068,
+  0x3e6d87802064,
+  0x3e7db980205f,
+  0x3e8de900205c,
+  0x3e9e17002057,
+  0x3eae42802053,
+  0x3ebe6c00204f,
+  0x3ece9380204b,
+  0x3edeb9002047,
+  0x3eeedc802043,
+  0x3efefe00203f,
+  0x3f0f1d80203b,
+  0x3f1f3b002036,
+  0x3f2f56002033,
+  0x3f3f6f80202e,
+  0x3f4f8680202a,
+  0x3f5f9b802027,
+  0x3f6faf002022,
+  0x3f7fc000201e,
+  0x3f8fcf00201a,
+  0x3f9fdc002016,
+  0x3fafe7002012,
+  0x3fbff000200e,
+  0x3fcff700200a,
+  0x3fdffc002006,
+  0x3fefff002002,
+};
