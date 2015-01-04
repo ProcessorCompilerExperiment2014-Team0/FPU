@@ -73,7 +73,7 @@ uint32_t fsqrt(uint32_t a_uint32) {
     }
 
     l = make_l[index];
-    y = (l & (0x7fffff << 23)) >> 23;
+    y = l >> 23;
     d = l & 0x7fffff;
     n = a.frac & MASK14;
 
@@ -83,7 +83,7 @@ uint32_t fsqrt(uint32_t a_uint32) {
     //printf("d = %u\n", d); //debug
     //printf("n = %u\n", n); //debug
 
-    result.frac = y + ((d * n) >> 23);
+    result.frac = y + ((d * n) >> 14);
 
     //printf("result.frac = %23u\n", result.frac); //debug
   }
