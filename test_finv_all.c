@@ -105,7 +105,7 @@ int main(void)
     count_total_diff[i] = 0;
   }
 
-  for (i = 0; i < 4294967295; i++) {
+  for (i = 0x0000000; i < 0x42000000; i++) {
 
     if ((i % 100000000) == 0) {
       printf("> checked (%2u/42)\n", i / 100000000);

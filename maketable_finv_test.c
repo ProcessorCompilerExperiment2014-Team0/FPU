@@ -77,14 +77,14 @@ int main(void) {
     }
     y2_mant = (1 << 23) + y2.frac;
     d = y1_mant - y2_mant;
-    d = (d & MASK13) >> 1;
+    //    d = (d & MASK13) >> 1;
     
-    rom_data = ((unsigned long int)y2.frac << 13) + d;
+    rom_data = ((unsigned long int)y2.frac << 14) + d;
 
-    fprintf(fp, "  0x%09lx,\n", rom_data);
+    fprintf(fp, "  0x%010lx,\n", rom_data);
   }
 
-  close(fp);
+  fclose(fp);
   
   printf("success (> %s)\n", OUTPUT);
   
