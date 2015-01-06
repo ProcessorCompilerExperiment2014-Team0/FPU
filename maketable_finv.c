@@ -1,14 +1,16 @@
 /* コンパイル時　gcc maketable_finv.c -lm */
 
+#include <assert.h>
+#include <inttypes.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
 #define MAX 1024
 #define X_RANGE 1.0
-#define OUTPUT "table_finv_test.txt"
+#define OUTPUT "finv_table.dat"
 #define MASK13 16382  // 11111111111110
 #define OVER 8192  // 2^13
 //#define OVER 16384
@@ -50,7 +52,7 @@ int main(void) {
   double c = X_RANGE / MAX;
   double t,a_db,b_db,y1_db,y2_db;
   uint32_t y1_mant, y2_mant, d, exception;
-  unsigned long int rom_data;
+  uint64_t rom_data;
   FILE *fp;
   union data_32bit y1,y2;
 
@@ -71,20 +73,32 @@ int main(void) {
     y2.fl32 = (float)y2_db;
 
     if (i != 0) {
+      assert(y1.exp == 127);
       y1_mant = (1 << 23) + y1.frac;
     } else {
       y1_mant = 1 << 24;
     }
-    y2_mant = (1 << 23) + y2.frac;
-    d = y1_mant - y2_mant;
-    d = (d & MASK13) >> 1;
-    
-    rom_data = ((unsigned long int)y2.frac << 13) + d;
 
-    fprintf(fp, "  0x%09lx,\n", rom_data);
+    if (i != 1023) {
+      assert(y2.exp == 127);
+      y2_mant = (1 << 23) + y2.frac;
+      d = y1_mant - y2_mant;
+      assert(d >> 14 == 0);
+      d = (d + 1) >> 1;
+      rom_data = ((uint64_t)y2.frac << 13) + d;
+    } else {
+      assert(y2.exp == 126);
+      y2_mant = (1 << 23);
+      d = y1_mant - y2_mant;
+      assert(d >> 14 == 0);
+      d = (d + 1) >> 1;
+      rom_data = d;
+    }
+
+    fprintf(fp, "%09" PRIX64 "\n", rom_data);
   }
 
-  close(fp);
+  fclose(fp);
   
   printf("success (> %s)\n", OUTPUT);
   
