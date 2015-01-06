@@ -1,6 +1,6 @@
 /*
   コンパイル時コマンド
-  gcc test_finv_all.c finv.c fmul.c fadd.c print.c def.c -lm
+  gcc test_finv_all.c finv.c print.c def.c -lm
 */
 
 #include <stdio.h>
@@ -10,7 +10,7 @@
 #include "def.h"
 #include "print.h"
 
-#define PERMIT 3  //誤差の許容範囲　何ulpまでか
+#define PERMIT 10  //誤差の許容範囲　何ulpまでか
 
 uint32_t finv(uint32_t org);
 
@@ -92,9 +92,18 @@ int main(void)
   union data_32bit a, n, result, correct;
   uint32_t i;
   long unsigned int total_mistakes  = 0;   //誤答数をカウント
+  /*
+  long unsigned int count_no_diff   = 0;
   long unsigned int count_1ulp_diff = 0;   //1bitずれをカウント
   long unsigned int count_2ulp_diff = 0;
   long unsigned int count_3ulp_diff = 0;
+  */
+  long unsigned int count_total_diff[PERMIT+1];
+  int count, j;
+  
+  for (i = 0; i < PERMIT+1; i++) {
+    count_total_diff[i] = 0;
+  }
 
   for (i = 0; i < 4294967295; i++) {
 
@@ -107,9 +116,20 @@ int main(void)
     result.uint32 = finv(a.uint32);
     correct.fl32 = 1.0 / n.fl32;  //非正規仮数を0に潰す
 
+    count = count_diff(result.uint32, correct.uint32);
+    if (count < PERMIT+1) {
+      count_total_diff[count]++;
+    } else {
+      if (total_mistakes <= 5) {
+	show_testcase(a, result, correct);
+      }
+      total_mistakes++;
+    }
+
+    /*
     switch (count_diff(result.uint32, correct.uint32)) {
     case 0:
-      break; //何もしない
+      count_no_diff++;   break;
     case 1:
       count_1ulp_diff++; break;
     case 2:
@@ -126,12 +146,20 @@ int main(void)
       }
       break;
     }
+    */
   }
-  
+  /*
+  printf("total   no diff : %lu\n", count_no_diff);
   printf("total 1ulp diff : %lu\n", count_1ulp_diff);
   printf("total 2ulp diff : %lu\n", count_2ulp_diff);
   printf("total 3ulp diff : %lu\n", count_3ulp_diff);
   printf("total mistakes  : %lu (more than 3ulp)\n", total_mistakes);
-  
+  */
+
+  for (j = 0; j < PERMIT+1; j++) {
+    printf("total %dulp diff : %lu\n", j, count_total_diff[j]);
+  }
+  printf("total mistakes   : %lu\n", total_mistakes);
+
   return 0;
 }
