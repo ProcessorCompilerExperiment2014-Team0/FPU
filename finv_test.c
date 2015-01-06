@@ -56,12 +56,12 @@ uint32_t finv(uint32_t a_uint32) {
     unsigned int y,d;
     index = (a.frac & MASK10) >> 13;
     l = make_l[index];
-    y = (l & (0x7fffff << 13)) >> 13;
+    y = (l >> 13) & 0x7fffff;
     d = l & 0x1fff;
     
     result.sign = a.sign;
     result.exp  = 253 - a.exp;
-    result.frac = y + ((d * (8192 - (a.frac & MASK13))) >> 12);
+    result.frac = y + ((d * (8192 - (a.frac & MASK13)) + 0x800) >> 12);
   }
   return (result.uint32);
 }
@@ -69,7 +69,7 @@ uint32_t finv(uint32_t a_uint32) {
 long long unsigned int make_l[1024] = {
   0xff801dff9,
   0xff007dfe8,
-  0xfe812dfd8,
+  0xfe811dfd8,
   0xfe01fbfc8,
   0xfd8319fb8,
   0xfd0477fa8,
@@ -1090,5 +1090,5 @@ long long unsigned int make_l[1024] = {
   0x006024807,
   0x004010805,
   0x002004803,
-  0xfffffe801
+  0x000000801,
 };
