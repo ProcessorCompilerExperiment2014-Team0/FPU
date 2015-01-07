@@ -1,8 +1,8 @@
 EXES = fadd fmul fneg fsub finv fsqrt
 TESTS = test_fadd test_fmul test_finv test_fsqrt
 LIBS = def.o print.o
-CC = gcc -std=c99
-CFLAGS = -Wall
+CC = gcc
+CFLAGS = -std=c99 -O2 -Wall
 LD = gcc
 LDFLAGS = -lm
 
@@ -39,6 +39,12 @@ test_finv: test_finv.o finv.o fadd.o fmul.o $(LIBS)
 
 test_fsqrt: test_fsqrt.o fsqrt.o fadd.o fmul.o $(LIBS)
 	$(LD) -o $@ $^ $(LDFLAGS)
+
+finv_table.dat: maketable_finv
+	./maketable_finv
+
+test_finv_all: finv_table.dat test_finv_all.o finv.o $(LIBS)
+	$(LD) -o $@ $(filter %.o, $^) $(LDFLAGS)
 
 clean:
 	rm -f $(EXES) $(TESTS) *.o *~ work-obj93.cf
