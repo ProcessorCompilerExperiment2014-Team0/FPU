@@ -25,9 +25,10 @@ ARCHITECTURE behavior OF testbench IS
   SIGNAL i1 :  std_logic_vector(31 downto 0);
   SIGNAL o1 :  std_logic_vector(31 downto 0);
   signal clk : std_logic;
+  signal terminate : std_logic := '0';
 
-  file infile : text is in "/home/kazuki/CPU/FPU/finv_test/testcase.txt";
-  file outfile : text is out "/home/kazuki/CPU/FPU/finv_test/result.txt";
+  file infile : text is in "/home/kazuki/CPU/team0/FPU/finv_test/testcase.txt";
+  file outfile : text is out "/home/kazuki/CPU/team0/FPU/finv_test/result.txt";
   
 BEGIN
 
@@ -53,6 +54,8 @@ BEGIN
         read(my_line, a);
 
         i1 <= a;
+      else
+        terminate <= '1';
       end if;
       --wait for 2 ns;
 
@@ -69,10 +72,21 @@ BEGIN
 
   clockgen: process  
   begin
-    clk <= '0';
-    wait for 5 ns;
-    clk <= '1';
-    wait for 5 ns;
+    if terminate = '0' then
+      clk <= '0';
+      wait for 5 ns;
+      clk <= '1';
+      wait for 5 ns;
+    else
+      clk <= '0';
+      wait for 5 ns;
+      clk <= '1';
+      wait for 5 ns;
+      clk <= '0';
+      wait for 5 ns;
+      clk <= '1';
+      wait;
+    end if;
   end process;
   
 end behavior;
