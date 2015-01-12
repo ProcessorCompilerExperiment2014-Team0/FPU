@@ -43,7 +43,7 @@ architecture behavior of table_rom is
     end loop;
     return rom;
   end function;
-  signal rom: rom_t := init_rom("/home/kazuki/CPU/team0/FPU/fsqrt_table.dat");
+  signal rom: rom_t := init_rom("/home/kazuki/CPU/team0/FPU/fsqrt_test/fsqrt_table.dat");
 begin
   process(clk)
   begin
@@ -116,8 +116,9 @@ begin
             else
               next_state := NORMAL;
               rom_en <= '1';
-              rom_addr <= (not f.expt(0)) & f.frac(22 downto 14)
+              rom_addr <= (not f.expt(0)) & f.frac(22 downto 14);
               b := unsigned(a);
+            end if;
         end case;
       end if;
       bridge_data <= b;
@@ -128,9 +129,10 @@ begin
     variable f, g: float_t;
     variable g_frac_25: unsigned(24 downto 0);
     variable y: unsigned(22 downto 0);
-    variable d: unsigned(13 downto 0);
+    variable d, n: unsigned(13 downto 0);
     variable ans: unsigned(31 downto 0);
     variable temp_expt: unsigned(7 downto 0);
+    variable temp_frac: unsigned(27 downto 0);
   begin
     if rising_edge(clk) then
       case state is
@@ -141,24 +143,26 @@ begin
           if is_metavalue(fpu_data(f)) then
             ans := VAL_NAN;                         -- 必要？
           else
+            g.sign := "0";
             if f.expt >= 127 then
               temp_expt := f.expt - 127;
               temp_expt := shift_right(temp_expt, 1);
-              g.exp := 127 + temp_expt;
+              g.expt := 127 + temp_expt;
             else
               temp_expt := 127 - f.expt;
               temp_expt := shift_right(temp_expt+1, 1);
-              g.exp := 127 - temp_expt;
+              g.expt := 127 - temp_expt;
             end if;
 
-            y := romdata(45 downto 23);
+            y := rom_data(35 downto 13);
             if f.expt(0) = '1' then
-              d := '0' & romdata(13 downto 0);
+              d := '0' & rom_data(12 downto 0);
             else
-              d := '1' & romdata(13 downto 0);
+              d := '1' & rom_data(12 downto 0);
             end if;
             n := f.frac(13 downto 0);
-            g.frac := y + shift_right(d * n, 14);
+            temp_frac := shift_right(d * n, 14);
+            g.frac := y + temp_frac(22 downto 0);
             ans := fpu_data(g);
           end if;
       end case;
