@@ -99,7 +99,9 @@ begin
       else
         f := float(unsigned(a));
         case float_type(f) is
-          when NAN => bridge_data <= VAL_NAN;
+          when NAN =>
+            b := VAL_NAN;
+	--bridge_data <= VAL_NAN;
           when INFORMAL =>
             if f.sign = "0" then
               b := VAL_PLUS_INF;
@@ -144,9 +146,9 @@ begin
             ans := fpu_data(g);
           elsif f.expt = 254 then
             if f.sign = "1" then
-              ans := VAL_PLUS_ZERO;
-            else
               ans := VAL_MINUS_ZERO;
+            else
+              ans := VAL_PLUS_ZERO;
             end if;
           else
             y := rom_data(35 downto 13);
