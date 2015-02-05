@@ -1,8 +1,13 @@
+-------------------------------------------------------------------------------
+-- Declaration
+-------------------------------------------------------------------------------
+
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
 library work;
 use work.fpu_common_p.all;
+
 package fsqrt_p is
   component fsqrt is
     port (
@@ -11,14 +16,23 @@ package fsqrt_p is
       s: out std_logic_vector(31 downto 0));
   end component;
 end package;
+
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
-use IEEE.std_logic_textio.all;
-library std;
-use std.textio.all;
+
+-------------------------------------------------------------------------------
+-- Table
+-------------------------------------------------------------------------------
+
+library IEEE;
+use IEEE.std_logic_1164.all;
+use IEEE.numeric_std.all;
+
 library work;
 use work.fpu_common_p.all;
+use work.table_p.all;
+
 entity table_rom is
   port (
     clk: in std_logic;
@@ -26,24 +40,11 @@ entity table_rom is
     addr: in unsigned(9 downto 0);
     data: out unsigned(35 downto 0));
 end table_rom;
+
 architecture behavior of table_rom is
-  subtype rom_data_t is unsigned(35 downto 0);
-  type rom_t is array(0 to 1023) of rom_data_t;
-  impure function init_rom(filename: string)
-    return rom_t is
-    file f: text open read_mode is filename;
-    variable hoge: std_logic_vector(35 downto 0);
-    variable l: line;
-    variable rom: rom_t;
-  begin
-    for i in rom'range loop
-      readline(f, l);
-      hread(l, hoge);
-      rom(i) := unsigned(hoge);
-    end loop;
-    return rom;
-  end function;
-  signal rom: rom_t := init_rom("/home/kazuki/CPU/team0/FPU/fsqrt_test/fsqrt_table.dat");
+
+  signal rom: fsqrt_table_t := fsqrt_table;
+
 begin
   process(clk)
   begin
@@ -54,18 +55,26 @@ begin
     end if;
   end process;
 end behavior;
+
+-------------------------------------------------------------------------------
+-- Definition
+-------------------------------------------------------------------------------
+
 library IEEE;
 use IEEE.std_logic_1164.all;
 use IEEE.numeric_std.all;
+
 library work;
 use work.fpu_common_p.all;
 use work.fsqrt_p.all;
+
 entity fsqrt is
   port (
     clk: in std_logic;
     a: in std_logic_vector(31 downto 0);
     s: out std_logic_vector(31 downto 0));
 end fsqrt;
+
 architecture behavior of fsqrt is
   component table_rom is
     port (
@@ -80,12 +89,15 @@ architecture behavior of fsqrt is
   type state_t is (NORMAL, CORNER);
   signal state: state_t := CORNER;
   signal bridge_data: fpu_data_t;
+
 begin
+
   table: table_rom port map(
     clk => clk,
     en => rom_en,
     addr => rom_addr,
     data => rom_data);
+
   fetch: process(clk)
     variable next_state: state_t;
     variable f: float_t;
@@ -125,6 +137,7 @@ begin
       state <= next_state;
     end if;
   end process;
+
   calc: process(clk)
     variable f, g: float_t;
     variable g_frac_25: unsigned(24 downto 0);

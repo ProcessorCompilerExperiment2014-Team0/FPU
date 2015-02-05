@@ -43,6 +43,12 @@ test_fsqrt: test_fsqrt.o fsqrt.o fadd.o fmul.o $(LIBS)
 finv_table.dat: maketable_finv
 	./maketable_finv
 
+fsqrt_table.dat: maketable_fsqrt
+	./maketable_fsqrt
+
+table.vhd: finv_table.dat fsqrt_table.dat
+	ruby table.erb
+
 test_finv_all: finv_table.dat test_finv_all.o finv.o $(LIBS)
 	$(LD) -o $@ $(filter %.o, $^) $(LDFLAGS)
 
