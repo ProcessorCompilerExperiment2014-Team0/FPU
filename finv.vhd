@@ -88,7 +88,7 @@ architecture behavior of finv is
   signal rom_addr    : unsigned(9 downto 0);
   signal rom_data    : unsigned(35 downto 0);
   type state_t is (NORMAL, CORNER);
-  signal state       : state_t   := CORNER;
+  signal state, state2       : state_t   := CORNER;
   signal bridge_data, bridge_data2 : fpu_data_t;
 
 begin
@@ -134,6 +134,7 @@ begin
       bridge_data <= b;
       bridge_data2 <= bridge_data;
       state       <= next_state;
+      state2 <= state;
     end if;
   end process;
 
@@ -146,7 +147,7 @@ begin
     variable temp_frac : unsigned(25 downto 0);
   begin
     if rising_edge(clk) then
-      case state is
+      case state2 is
         when CORNER =>
           ans := bridge_data2;
         when NORMAL =>
