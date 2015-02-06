@@ -89,7 +89,7 @@ architecture behavior of finv is
   signal rom_data    : unsigned(35 downto 0);
   type state_t is (NORMAL, CORNER);
   signal state       : state_t   := CORNER;
-  signal bridge_data : fpu_data_t;
+  signal bridge_data, bridge_data2 : fpu_data_t;
 
 begin
 
@@ -114,7 +114,6 @@ begin
         case float_type(f) is
           when NAN =>
             b := VAL_NAN;
-          --bridge_data <= VAL_NAN;
           when INFORMAL =>
             if f.sign = "0" then
               b := VAL_PLUS_INF;
@@ -133,6 +132,7 @@ begin
         end case;
       end if;
       bridge_data <= b;
+      bridge_data2 <= bridge_data;
       state       <= next_state;
     end if;
   end process;
@@ -148,9 +148,9 @@ begin
     if rising_edge(clk) then
       case state is
         when CORNER =>
-          ans := bridge_data;
+          ans := bridge_data2;
         when NORMAL =>
-          f := float(bridge_data);
+          f := float(bridge_data2);
           if is_metavalue(fpu_data(f)) then
             ans := VAL_NAN;
           elsif f.frac = 0 then
