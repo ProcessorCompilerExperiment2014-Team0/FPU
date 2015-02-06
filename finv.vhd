@@ -171,6 +171,7 @@ begin
             g.sign    := f.sign;
             g.expt    := 253 - f.expt;
             temp_frac := shift_right((d * (8192 - f.frac(12 downto 0)) + 1), 12);
+		-- diffを見る限りf.frac(12 downto 0)が0のときの挙動が怪しそう 2015/02/06
             g.frac    := y + temp_frac(22 downto 0);
             ans       := fpu_data(g);
           end if;
