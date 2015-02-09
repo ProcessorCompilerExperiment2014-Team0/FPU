@@ -10,10 +10,10 @@ use std.textio.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-ENTITY testbench IS
-END testbench;
+ENTITY fsqrt_tb IS
+END fsqrt_tb;
 
-ARCHITECTURE behavior OF testbench IS
+ARCHITECTURE behavior OF fsqrt_tb IS
 
   -- Component Declaration
   COMPONENT fsqrt
