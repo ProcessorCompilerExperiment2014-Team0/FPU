@@ -12,11 +12,9 @@ finv.c, fsqrt.cの場合、-lmが必要となるので注意。
 #include <stdint.h>
 #include <stdlib.h>
 #include "finv.c"                  //ここを書き換える
-#include "fadd.c"
-#include "fmul.c"
 #include "def.c"
 
-#define INPUT  "testcase.txt"
+#define INPUT  "testcase-mono.txt"
 #define OUTPUT "answer.txt"
 
 //2^32-1まで。32bitで返す
