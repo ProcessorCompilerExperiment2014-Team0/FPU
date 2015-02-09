@@ -162,9 +162,6 @@ begin
           ans := bridge_data2;
         when NORMAL =>
           f := float(bridge_data2);
-          if is_metavalue(fpu_data(f)) then
-            ans := VAL_NAN;                         -- 必要？
-          else
             g.sign := "0";
             if f.expt >= 127 then
               temp_expt := f.expt - 127;
@@ -186,7 +183,6 @@ begin
             temp_frac := shift_right(d * n, 14);
             g.frac := y + temp_frac(22 downto 0);
             ans := fpu_data(g);
-          end if;
       end case;
       s <= std_logic_vector(ans);
     end if;
