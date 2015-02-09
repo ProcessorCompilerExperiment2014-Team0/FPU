@@ -62,16 +62,21 @@ gen_input: ftrc.o itof.o gen_input.o def.o
 work-obj93.cf:
 	$(GHDLC) -i $(GHDLFLAGS) $(SOURCES)
 
+makeanswer_fsqrt: makeanswer_fsqrt.c
+	$(CC) $< -o $@ $(CFLAGS) -lm
 testcase-mono.txt: maketestcase_mono
 	./maketestcase_mono
 	cp testcase.txt testcase-mono.txt
 
+test_fsqrt_diff: test_fsqrt_c test_fsqrt_vhdl
+	diff answer.txt fsqrt_test/result.txt
+test_fsqrt_c: testcase-mono.txt makeanswer_fsqrt
+	./makeanswer_fsqrt
 test_fsqrt_vhdl: work-obj93.cf testcase-mono.txt
 	$(GHDLC) -m $(GHDLFLAGS) fsqrt_tb
 	-mkdir fsqrt_test/
 	-cp testcase-mono.txt fsqrt_test/testcase.txt
 	$(GHDLC) -r $(GHDLFLAGS) fsqrt_tb
-
 $(TESTBENCH): work-obj93.cf gen_input
 	$(GHDLC) -m $(GHDLFLAGS) $@
 	./gen_input $@ | $(GHDLC) -r $(GHDLFLAGS) $@ $(GHDL_SIM_OPT) --wave=$@.ghw

@@ -1,6 +1,6 @@
 require 'erb'
 mems = [["finv_table", 36, 1024, "finv_table.dat"],
-	    ["fsqrt_table", 36, 1024, "finv_table.dat"]]
+	    ["fsqrt_table", 36, 1024, "fsqrt_table.dat"]]
 File.open("table.vhd", "w") do |f|
   f.puts ERB.new(DATA.read, nil, '-').result(binding)
 end

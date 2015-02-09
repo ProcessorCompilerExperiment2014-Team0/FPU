@@ -82,7 +82,7 @@ uint32_t fsqrt(uint32_t a_uint32) {
     }
     n = a.frac & MASK14;
 
-    result.frac = y + ((d * n) >> 14);
+    result.frac = y + (((long long unsigned int)d * n) >> 14);
 
   }
   return (result.uint32);
