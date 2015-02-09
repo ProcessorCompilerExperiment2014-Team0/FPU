@@ -6,8 +6,8 @@ CFLAGS = -std=c99 -O2 -Wall
 LD = gcc
 LDFLAGS = -lm
 
-TESTBENCH = fcmp_eq_tb fcmp_gt_tb ftoi_tb itof_tb
-SOURCES =  fcmp.vhd fcmp_eq_tb.vhd fcmp_gt_tb.vhd ftoi_tb.vhd ftoi_func.vhd itof_tb.vhd itof_func.vhd fpu_common.vhd
+TESTBENCH = fcmp_gt_tb ftoi_tb itof_tb
+SOURCES =  fcmp.vhd fcmp_gt_tb.vhd ftoi_tb.vhd ftoi_func.vhd itof_tb.vhd itof_func.vhd fpu_common.vhd fsqrt_tb.vhd fsqrt.vhd table.vhd
 GHDLC = ghdl
 GHDLFLAGS  = -g --ieee=synopsys --mb-comments -fexplicit
 GHDL_SIM_OPT = --stop-time=20ms
@@ -39,7 +39,10 @@ test_finv: test_finv.o finv.o fadd.o fmul.o $(LIBS)
 
 test_fsqrt: test_fsqrt.o fsqrt.o fadd.o fmul.o $(LIBS)
 	$(LD) -o $@ $^ $(LDFLAGS)
-
+maketable_finv: maketable_finv.c finv.c def.c
+	$(LD) -o $@ $^ $(LDFLAGS)
+maketable_fsqrt: maketable_fsqrt.c fsqrt.c def.c
+	$(LD) -o $@ $^ $(LDFLAGS)
 finv_table.dat: maketable_finv
 	./maketable_finv
 
@@ -59,14 +62,13 @@ clean:
 
 gen_input: ftrc.o itof.o gen_input.o def.o
 
-work-obj93.cf:
+work-obj93.cf: $(SOURCES)
 	$(GHDLC) -i $(GHDLFLAGS) $(SOURCES)
 
-makeanswer_fsqrt: makeanswer_fsqrt.c
+makeanswer_fsqrt: makeanswer_fsqrt.c fsqrt_table.dat
 	$(CC) $< -o $@ $(CFLAGS) -lm
 testcase-mono.txt: maketestcase_mono
 	./maketestcase_mono
-	cp testcase.txt testcase-mono.txt
 
 test_fsqrt_diff: test_fsqrt_c test_fsqrt_vhdl
 	diff answer.txt fsqrt_test/result.txt
