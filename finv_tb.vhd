@@ -27,8 +27,8 @@ ARCHITECTURE behavior OF testbench IS
   signal clk : std_logic;
   signal terminate : std_logic := '0';
 
-  file infile : text is in "/home/kazuki/CPU/team0/FPU/finv_test/testcase.txt";
-  file outfile : text is out "/home/kazuki/CPU/team0/FPU/finv_test/result.txt";
+  file infile : text is in "./finv_test/testcase.txt";
+  file outfile : text is out "./finv_test/result.txt";
   
 BEGIN
 
