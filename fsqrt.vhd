@@ -88,7 +88,9 @@ architecture behavior of fsqrt is
   signal rom_data: unsigned(35 downto 0);
   type state_t is (NORMAL, CORNER);
   signal state: state_t := CORNER;
+  signal state2: state_t := CORNER;
   signal bridge_data: fpu_data_t;
+  signal bridge_data2: fpu_data_t;
 
 begin
 
@@ -111,7 +113,12 @@ begin
       else
         f := float(unsigned(a));
         case float_type(f) is
-          when NAN => bridge_data <= VAL_NAN;
+          when NAN =>
+            if f.sign = "0" then
+              b := VAL_NAN;
+            else
+              b := VAL_MINUS_NAN;
+            end if;
           when INFORMAL =>
             if f.sign = "0" then
               b := VAL_PLUS_ZERO;
@@ -134,7 +141,9 @@ begin
         end case;
       end if;
       bridge_data <= b;
+      bridge_data2 <= bridge_data;
       state <= next_state;
+      state2 <= state;
     end if;
   end process;
 
@@ -148,11 +157,11 @@ begin
     variable temp_frac: unsigned(27 downto 0);
   begin
     if rising_edge(clk) then
-      case state is
+      case state2 is
         when CORNER =>
-          ans := bridge_data;
+          ans := bridge_data2;
         when NORMAL =>
-          f := float(bridge_data);
+          f := float(bridge_data2);
           if is_metavalue(fpu_data(f)) then
             ans := VAL_NAN;                         -- 必要？
           else
@@ -179,7 +188,7 @@ begin
             ans := fpu_data(g);
           end if;
       end case;
-      S <= std_logic_vector(ans);
+      s <= std_logic_vector(ans);
     end if;
   end process;
 end behavior;
