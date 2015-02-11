@@ -1,6 +1,6 @@
 require 'erb'
 mems = [["finv_table", 36, 1024, "finv_table.dat"],
-	    ["fsqrt_table", 36, 1024, "finv_table.dat"]]
+        ["fsqrt_table", 36, 1024, "fsqrt_table.dat"]]
 File.open("table.vhd", "w") do |f|
   f.puts ERB.new(DATA.read, nil, '-').result(binding)
 end
@@ -16,14 +16,14 @@ use ieee.numeric_std.all;
 
 package table_p is
   <%- for name, width, len, fname in mems do %>
-  	type <%= name %>_t is array (0 to <%= len-1 %>) of unsigned(<%= width-1 %> downto 0);
+    type <%= name %>_t is array (0 to <%= len-1 %>) of unsigned(<%= width-1 %> downto 0);
     constant <%= name %> : <%= name %>_t := (
-	  <%- File.open(fname) do |f| -%>
-	  <%- for i in 0...len do -%>
-	  <%- break unless (l = f.gets) -%>
-	  <%= i %> => x"<%= l.chomp %>",
-	  <%- end -%>
-	  <%- end -%>
-	  others => (others => '0'));
+      <%- File.open(fname) do |f| -%>
+      <%- for i in 0...len do -%>
+      <%- break unless (l = f.gets) -%>
+      <%= i %> => x"<%= l.chomp %>",
+      <%- end -%>
+      <%- end -%>
+      others => (others => '0'));
   <%- end %>
 end package table_p;
