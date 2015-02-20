@@ -26,7 +26,7 @@ package fpu_common_p is
     NAN);
 
   constant VAL_NAN: fpu_data_t := x"7fffffff";
-  constant VAL_MINUS_NAN: fpu_data_t := x"ff700000";
+  constant VAL_MINUS_NAN: fpu_data_t := x"ffc00000";
   constant VAL_PLUS_ZERO: fpu_data_t := x"00000000";
   constant VAL_MINUS_ZERO: fpu_data_t := x"80000000";
   constant VAL_PLUS_INF: fpu_data_t := x"7f800000";

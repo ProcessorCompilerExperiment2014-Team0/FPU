@@ -4,7 +4,7 @@
 #include "MT.h"
 
 #define MAX 4294967295 // 2^32-1
-#define FILE_NAME "testcase.txt"
+#define FILE_NAME "testcase-mono.txt"
 
 #define ZERO     0u
 #define NZERO    2147483648u
