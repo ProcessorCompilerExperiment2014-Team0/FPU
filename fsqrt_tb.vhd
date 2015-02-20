@@ -10,10 +10,10 @@ use std.textio.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-ENTITY testbench IS
-END testbench;
+ENTITY fsqrt_tb IS
+END fsqrt_tb;
 
-ARCHITECTURE behavior OF testbench IS
+ARCHITECTURE behavior OF fsqrt_tb IS
 
   -- Component Declaration
   COMPONENT fsqrt
@@ -26,9 +26,11 @@ ARCHITECTURE behavior OF testbench IS
   SIGNAL o1 :  std_logic_vector(31 downto 0);
   signal clk : std_logic;
   signal terminate : std_logic := '0';
+  signal t_start : std_logic_vector(31 downto 0) := x"00000000";
+  signal t_end   : std_logic_vector(31 downto 0) := x"00000000";
 
-  file infile : text is in "/home/kazuki/CPU/team0/FPU/fsqrt_test/testcase.txt";
-  file outfile : text is out "/home/kazuki/CPU/team0/FPU/fsqrt_test/result.txt";
+  file infile : text is in "fsqrt_test/testcase.txt";
+  file outfile : text is out "fsqrt_test/result.txt";
   
 BEGIN
 
@@ -42,6 +44,7 @@ BEGIN
   tb : process (clk)
     variable my_line, out_line : LINE;
     variable a, b : std_logic_vector(31 downto 0);
+    variable t : std_logic_vector(31 downto 0);
   BEGIN
 
     if rising_edge(clk) then
@@ -55,14 +58,21 @@ BEGIN
 
         i1 <= a;
       else
-        terminate <= '1';
+        t := t_end;
+        if t >= 3 then
+          terminate <= '1';
+        end if;
+        t_end <= t + 1;
       end if;
       --wait for 2 ns;
 
       b := o1;
 
-      write(out_line, b);
-      writeline(outfile, out_line);
+      if t_start >= 4 then
+        write(out_line, b);
+        writeline(outfile, out_line);
+      end if;
+      t_start <= t_start + 1;
     end if;
 
 
@@ -78,13 +88,6 @@ BEGIN
       clk <= '1';
       wait for 5 ns;
     else
-      clk <= '0';
-      wait for 5 ns;
-      clk <= '1';
-      wait for 5 ns;
-      clk <= '0';
-      wait for 5 ns;
-      clk <= '1';
       wait;
     end if;
   end process;

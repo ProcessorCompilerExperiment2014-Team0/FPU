@@ -144,7 +144,8 @@ begin
     variable y         : unsigned(22 downto 0);
     variable d         : unsigned(12 downto 0);
     variable ans       : unsigned(31 downto 0);
-    variable temp_frac : unsigned(25 downto 0);
+    variable temp_frac : unsigned(26 downto 0);
+    variable q         : unsigned(13 downto 0);
   begin
     if rising_edge(clk) then
       case state2 is
@@ -170,11 +171,8 @@ begin
             d         := rom_data(12 downto 0);
             g.sign    := f.sign;
             g.expt    := 253 - f.expt;
-            if f.frac(12 downto 0) = 0 then
-              temp_frac := d * 2;
-            else
-              temp_frac := shift_right((d * (8192 - f.frac(12 downto 0)) + 1), 12);
-            end if;
+              q := '0' & f.frac(12 downto 0);
+              temp_frac := shift_right((d * (8192 - q) + 1), 12);
             g.frac    := y + temp_frac(22 downto 0);
             ans       := fpu_data(g);
           end if;
