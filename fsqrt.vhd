@@ -33,15 +33,15 @@ library work;
 use work.fpu_common_p.all;
 use work.table_p.all;
 
-entity table_rom is
+entity fsqrt_table_rom is
   port (
     clk: in std_logic;
     en: in std_logic;
     addr: in unsigned(9 downto 0);
     data: out unsigned(35 downto 0));
-end table_rom;
+end fsqrt_table_rom;
 
-architecture behavior of table_rom is
+architecture behavior of fsqrt_table_rom is
 
   signal rom: fsqrt_table_t := fsqrt_table;
 
@@ -76,7 +76,7 @@ entity fsqrt is
 end fsqrt;
 
 architecture behavior of fsqrt is
-  component table_rom is
+  component fsqrt_table_rom is
     port (
       clk: in std_logic;
       en: in std_logic;
@@ -94,7 +94,7 @@ architecture behavior of fsqrt is
 
 begin
 
-  table: table_rom port map(
+  table: fsqrt_table_rom port map(
     clk => clk,
     en => rom_en,
     addr => rom_addr,

@@ -47,9 +47,12 @@ package body ftoi_p is
 
   begin
 
+    if is_metavalue(a) then
+      return (others => 'X');
+    end if;
+
     a_32bit := float(a);
     flag := resize(a_32bit.sign, 32);
-
 
     if a_32bit.expt < 127 then
       result := x"00000000";

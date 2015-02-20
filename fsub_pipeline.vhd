@@ -11,7 +11,7 @@ use work.fsub_p.all;
 
 package fsub_pipeline_p is
 
-  component core is
+  component fsub_pipeline is
     port (
       clk   : in  std_logic;
       xrst  : in  std_logic;
@@ -19,9 +19,9 @@ package fsub_pipeline_p is
       a     : in  unsigned(31 downto 0);
       b     : in  unsigned(31 downto 0);
       s     : out unsigned(31 downto 0));
-  end component core;
+  end component fsub_pipeline;
 
-end package core_p;
+end package fsub_pipeline_p;
 
 -------------------------------------------------------------------------------
 -- Definition
@@ -46,7 +46,7 @@ entity fsub_pipeline is
 end entity fsub_pipeline;
 
 architecture behavior of fsub_pipeline is
-  signal a_fsub, b_fsub, s_fsub : std_logic_vector(31 dnwoto 0);
+  signal a_fsub, b_fsub, s_fsub : std_logic_vector(31 downto 0);
 
   type latch_t is record
     a : unsigned(31 downto 0);
@@ -54,9 +54,9 @@ architecture behavior of fsub_pipeline is
     s : unsigned(31 downto 0);
   end record latch_t;
 
-  constant latch_init : latch_t (
-    a => (others => '-');
-    b => (others => '-');
+  constant latch_init : latch_t := (
+    a => (others => '-'),
+    b => (others => '-'),
     s => (others => '-'));
 
   signal r, rin : latch_t := latch_init;
@@ -69,7 +69,7 @@ begin
     s => s_fsub);
 
   comb: process (r, a, b, stall, s_fsub) is
-    v: latch_t;
+    variable v: latch_t;
   begin
     v := r;
 

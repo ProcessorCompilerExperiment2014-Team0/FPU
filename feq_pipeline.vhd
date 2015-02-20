@@ -11,7 +11,7 @@ use work.fcmp_p.all;
 
 package feq_pipeline_p is
 
-  component core is
+  component feq_pipeline is
     port (
       clk   : in  std_logic;
       xrst  : in  std_logic;
@@ -19,9 +19,9 @@ package feq_pipeline_p is
       a     : in  unsigned(31 downto 0);
       b     : in  unsigned(31 downto 0);
       s     : out unsigned(31 downto 0));
-  end component core;
+  end component feq_pipeline;
 
-end package core_p;
+end package feq_pipeline_p;
 
 -------------------------------------------------------------------------------
 -- Definition
@@ -53,9 +53,9 @@ architecture behavior of feq_pipeline is
     s : unsigned(31 downto 0);
   end record latch_t;
 
-  constant latch_init : latch_t (
-    a => (others => '-');
-    b => (others => '-');
+  constant latch_init : latch_t := (
+    a => (others => '-'),
+    b => (others => '-'),
     s => (others => '-'));
 
   signal r, rin : latch_t := latch_init;
@@ -63,7 +63,7 @@ architecture behavior of feq_pipeline is
 begin
 
   comb: process (r, a, b, stall) is
-    v: latch_t;
+    variable v: latch_t;
   begin
     v := r;
 

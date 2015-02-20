@@ -11,7 +11,7 @@ use work.fadd_p.all;
 
 package fadd_pipeline_p is
 
-  component core is
+  component fadd_pipeline is
     port (
       clk   : in  std_logic;
       xrst  : in  std_logic;
@@ -19,9 +19,9 @@ package fadd_pipeline_p is
       a     : in  unsigned(31 downto 0);
       b     : in  unsigned(31 downto 0);
       s     : out unsigned(31 downto 0));
-  end component core;
+  end component fadd_pipeline;
 
-end package core_p;
+end package fadd_pipeline_p;
 
 -------------------------------------------------------------------------------
 -- Definition
@@ -46,7 +46,7 @@ entity fadd_pipeline is
 end entity fadd_pipeline;
 
 architecture behavior of fadd_pipeline is
-  signal a_fadd, b_fadd, s_fadd : std_logic_vector(31 dnwoto 0);
+  signal a_fadd, b_fadd, s_fadd : std_logic_vector(31 downto 0);
 
   type latch_t is record
     a : unsigned(31 downto 0);
@@ -54,9 +54,9 @@ architecture behavior of fadd_pipeline is
     s : unsigned(31 downto 0);
   end record latch_t;
 
-  constant latch_init : latch_t (
-    a => (others => '-');
-    b => (others => '-');
+  constant latch_init : latch_t := (
+    a => (others => '-'),
+    b => (others => '-'),
     s => (others => '-'));
 
   signal r, rin : latch_t := latch_init;
@@ -69,7 +69,7 @@ begin
     s => s_fadd);
 
   comb: process (r, a, b, stall, s_fadd) is
-    v: latch_t;
+    variable v: latch_t;
   begin
     v := r;
 

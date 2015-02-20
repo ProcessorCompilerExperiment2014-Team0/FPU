@@ -32,15 +32,15 @@ library work;
 use work.fpu_common_p.all;
 use work.table_p.all;
 
-entity table_rom is
+entity finv_table_rom is
   port (
     clk  : in  std_logic;
     en   : in  std_logic;
     addr : in  unsigned(9 downto 0);
     data : out unsigned(35 downto 0));
-end table_rom;
+end finv_table_rom;
 
-architecture behavior of table_rom is
+architecture behavior of finv_table_rom is
 
   signal rom: finv_table_t := finv_table;
 
@@ -76,7 +76,7 @@ end finv;
 
 architecture behavior of finv is
 
-  component table_rom is
+  component finv_table_rom is
     port (
       clk  : in  std_logic;
       en   : in  std_logic;
@@ -93,7 +93,7 @@ architecture behavior of finv is
 
 begin
 
-  table : table_rom port map(
+  table : finv_table_rom port map(
     clk  => clk,
     en   => rom_en,
     addr => rom_addr,

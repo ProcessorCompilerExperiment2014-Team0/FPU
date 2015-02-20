@@ -70,6 +70,10 @@ package body itof_p is
 
   begin
 
+    if is_metavalue(a) then
+      return (others => 'X');
+    end if;
+
     a_32bit := float(a);
     flag := a_32bit.sign;
 
