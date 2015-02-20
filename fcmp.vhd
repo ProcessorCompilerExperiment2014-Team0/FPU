@@ -9,6 +9,8 @@ package fcmp_p is
 
   function fcmp_eq(a, b: fpu_data_t) return fpu_data_t;
   function fcmp_gt(a, b: fpu_data_t) return fpu_data_t;
+  function fcmp_le(a, b: fpu_data_t) return fpu_data_t;
+  function fcmp_lt(a, b: fpu_data_t) return fpu_data_t;
 
 end package;
 
@@ -126,5 +128,37 @@ package body fcmp_p is
 
   end function;
 
-end package body;
+  function fcmp_le(a, b: fpu_data_t)
+    return fpu_data_t is
+  -- return 1 if a > b
+  begin
 
+    if is_metavalue(a) or is_metavalue(b) then
+      return to_unsigned(0, 32);
+    end if;
+
+    case fcmp_chk(a, b) is
+      when LT | EQ => return to_unsigned(1, 32);
+      when others => return to_unsigned(0, 32);
+    end case;
+
+  end function;
+
+  function fcmp_lt(a, b: fpu_data_t)
+    return fpu_data_t is
+  -- return 1 if a > b
+  begin
+
+    if is_metavalue(a) or is_metavalue(b) then
+      return to_unsigned(0, 32);
+    end if;
+
+    case fcmp_chk(a, b) is
+      when LT => return to_unsigned(1, 32);
+      when others => return to_unsigned(0, 32);
+    end case;
+
+  end function;
+
+
+end package body;
