@@ -16,6 +16,8 @@ end package;
 
 package body fcmp_p is
 
+  constant FLOAT_TWO : fpu_data_t := x"40000000";
+
   type chk_result_t is (
     INVALID,
     EQ,
@@ -106,7 +108,7 @@ package body fcmp_p is
     end if;
 
     case fcmp_chk(a, b) is
-      when EQ => return to_unsigned(1, 32);
+      when EQ => return FLOAT_TWO;
       when others => return to_unsigned(0, 32);
     end case;
 
@@ -138,7 +140,7 @@ package body fcmp_p is
     end if;
 
     case fcmp_chk(a, b) is
-      when LT | EQ => return to_unsigned(1, 32);
+      when LT | EQ => return FLOAT_TWO;
       when others => return to_unsigned(0, 32);
     end case;
 
@@ -154,7 +156,7 @@ package body fcmp_p is
     end if;
 
     case fcmp_chk(a, b) is
-      when LT => return to_unsigned(1, 32);
+      when LT => return FLOAT_TWO;
       when others => return to_unsigned(0, 32);
     end case;
 

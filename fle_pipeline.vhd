@@ -70,7 +70,7 @@ begin
     if stall /= '1' then
       v.a := a;
       v.b := b;
-      v.s := fcmp_eq(r.a, r.b);
+      v.s := fcmp_le(r.a, r.b);
     end if;
 
     s   <= r.s;
