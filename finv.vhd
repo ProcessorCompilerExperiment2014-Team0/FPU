@@ -13,9 +13,11 @@ package finv_p is
 
   component finv is
     port (
-      clk : in  std_logic;
-      a   : in  std_logic_vector(31 downto 0);
-      s   : out std_logic_vector(31 downto 0));
+      clk   : in  std_logic;
+      xrst  : in  std_logic;
+      stall : in  std_logic;
+      a     : in  unsigned(31 downto 0);
+      s     : out unsigned(31 downto 0));
   end component;
 
 end package;
@@ -69,9 +71,11 @@ use work.finv_p.all;
 
 entity finv is
   port (
-    clk : in  std_logic;
-    a   : in  std_logic_vector(31 downto 0);
-    s   : out std_logic_vector(31 downto 0));
+    clk   : in  std_logic;
+    xrst  : in  std_logic;
+    stall : in  std_logic;
+    a     : in  unsigned(31 downto 0);
+    s     : out unsigned(31 downto 0));
 end finv;
 
 architecture behavior of finv is
@@ -87,9 +91,23 @@ architecture behavior of finv is
   signal rom_en      : std_logic := '0';
   signal rom_addr    : unsigned(9 downto 0);
   signal rom_data    : unsigned(35 downto 0);
+
   type state_t is (NORMAL, CORNER);
-  signal state, state2       : state_t   := CORNER;
-  signal bridge_data, bridge_data2 : fpu_data_t;
+
+  type latch_t is record
+    state0, state1   : state_t;
+    bridge0, bridge1 : fpu_data_t;
+    data             : unsigned(35 downto 0);
+  end record latch_t;
+
+  constant latch_init : latch_t := (
+    state0  => CORNER,
+    state1  => CORNER,
+    bridge0 => (others => '-'),
+    bridge1 => (others => '-'),
+    data    => (others => '-'));
+
+  signal r, rin : latch_t;
 
 begin
 
@@ -99,86 +117,111 @@ begin
     addr => rom_addr,
     data => rom_data);
 
-  fetch : process(clk)
-    variable next_state : state_t;
-    variable f          : float_t;
-    variable b          : fpu_data_t;
-  begin
-    if rising_edge(clk) then
-      next_state := CORNER;
-      if is_metavalue(a) then
-        rom_en <= '0';
-        b      := VAL_NAN;
-      else
-        f := float(unsigned(a));
-        case float_type(f) is
-          when NAN =>
-            b := VAL_NAN;
-          when INFORMAL =>
-            if f.sign = "0" then
-              b := VAL_PLUS_INF;
-            else
-              b := VAL_MINUS_INF;
-            end if;
-          when PLUS_INF   => b := VAL_PLUS_ZERO;
-          when MINUS_INF  => b := VAL_MINUS_ZERO;
-          when PLUS_ZERO  => b := VAL_PLUS_INF;
-          when MINUS_ZERO => b := VAL_MINUS_INF;
-          when others =>
-            next_state := NORMAL;
-            rom_en     <= '1';
-            rom_addr   <= f.frac(22 downto 13);
-            b          := unsigned(a);
-        end case;
-      end if;
-      bridge_data <= b;
-      bridge_data2 <= bridge_data;
-      state       <= next_state;
-      state2 <= state;
-    end if;
-  end process;
+  comb : process (r, a, rom_data) is
 
-  calc : process(clk)
-    variable f, g      : float_t;
+    variable v    : latch_t;
+    -- variables for 1st stage
+    variable en   : std_logic;
+    variable addr : unsigned(9 downto 0);
+    variable f    : float_t;
+    -- variables for 3rd stage
+    variable g, h      : float_t;
     variable g_frac_25 : unsigned(24 downto 0);
     variable y         : unsigned(22 downto 0);
     variable d         : unsigned(12 downto 0);
     variable ans       : unsigned(31 downto 0);
     variable temp_frac : unsigned(26 downto 0);
     variable q         : unsigned(13 downto 0);
+
   begin
-    if rising_edge(clk) then
-      case state2 is
+    v        := r;
+    v.state0 := CORNER;
+    en       := '0';
+    addr     := (others => '-');
+
+    if stall = '1' then
+      rom_en   <= en;
+      rom_addr <= addr;
+      s        <= (others => '-');
+    else
+      -- 1st stage
+      if is_metavalue(a) then
+        v.bridge0 := VAL_NAN;
+      else
+        f := float(a);
+        case float_type(f) is
+          when NAN =>
+            v.bridge0 := VAL_NAN;
+          when INFORMAL =>
+            if f.sign = "0" then
+              v.bridge0 := VAL_PLUS_INF;
+            else
+              v.bridge0 := VAL_MINUS_INF;
+            end if;
+          when PLUS_INF   => v.bridge0 := VAL_PLUS_ZERO;
+          when MINUS_INF  => v.bridge0 := VAL_MINUS_ZERO;
+          when PLUS_ZERO  => v.bridge0 := VAL_PLUS_INF;
+          when MINUS_ZERO => v.bridge0 := VAL_MINUS_INF;
+          when others =>
+            en        := '1';
+            addr      := f.frac(22 downto 13);
+            v.state0  := NORMAL;
+            v.bridge0 := unsigned(a);
+        end case;
+      end if;
+
+      rom_en   <= en;
+      rom_addr <= addr;
+
+      -- 2nd stage
+      v.bridge1 := r.bridge0;
+      v.state1  := r.state0;
+      v.data    := rom_data;
+
+      -- 3rd stage
+      case r.state1 is
         when CORNER =>
-          ans := bridge_data2;
+          ans := r.bridge1;
         when NORMAL =>
-          f := float(bridge_data2);
-          if is_metavalue(fpu_data(f)) then
+          h := float(r.bridge1);
+          if is_metavalue(fpu_data(h)) then
             ans := VAL_NAN;
-          elsif f.frac = 0 then
-            g.sign := f.sign;
-            g.expt := 254 - f.expt;
+          elsif h.frac = 0 then
+            g.sign := h.sign;
+            g.expt := 254 - h.expt;
             g.frac := (others => '0');
             ans    := fpu_data(g);
-          elsif f.expt = 254 then
-            if f.sign = "1" then
+          elsif h.expt = 254 then
+            if h.sign = "1" then
               ans := VAL_MINUS_ZERO;
             else
               ans := VAL_PLUS_ZERO;
             end if;
           else
-            y         := rom_data(35 downto 13);
-            d         := rom_data(12 downto 0);
-            g.sign    := f.sign;
-            g.expt    := 253 - f.expt;
-              q := '0' & f.frac(12 downto 0);
-              temp_frac := shift_right((d * (8192 - q) + 1), 12);
+            y         := r.data(35 downto 13);
+            d         := r.data(12 downto 0);
+            g.sign    := h.sign;
+            g.expt    := 253 - h.expt;
+            q         := '0' & h.frac(12 downto 0);
+            temp_frac := shift_right((d * (8192 - q) + 1), 12);
             g.frac    := y + temp_frac(22 downto 0);
             ans       := fpu_data(g);
           end if;
       end case;
-      s <= std_logic_vector(ans);
-    end if;
-  end process;
 
-end behavior;
+      s <= ans;
+    end if;
+
+    rin <= v;
+  end process comb;
+
+  seq: process (clk, xrst) is
+  begin
+    if xrst = '0' then
+      r <= latch_init;
+    elsif rising_edge(clk) then
+      r <= rin;
+    end if;
+  end process seq;
+
+end architecture behavior;
