@@ -10,10 +10,10 @@ use std.textio.all;
 use ieee.std_logic_arith.all;
 use ieee.std_logic_unsigned.all;
 
-ENTITY testbench IS
-END testbench;
+ENTITY fadd_tb IS
+END fadd_tb;
 
-ARCHITECTURE behavior OF testbench IS
+ARCHITECTURE behavior OF fadd_tb IS
 
   -- Component Declaration
   COMPONENT fadd
@@ -36,8 +36,8 @@ BEGIN
 
   --  Test Bench Statements
   tb : PROCESS
-    file infile : text is in "/home/kazuki/CPU/FPU/fadd_test/testcase.txt";
-    file outfile : text is out "/home/kazuki/CPU/FPU/fadd_test/result.txt";
+    file infile : text is in "./fadd_test/testcase.txt";
+    file outfile : text is out "./fadd_test/result.txt";
     variable my_line, out_line : LINE;
     variable a, b, c : std_logic_vector(31 downto 0);
   BEGIN
