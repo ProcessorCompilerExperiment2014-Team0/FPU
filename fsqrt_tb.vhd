@@ -1,84 +1,69 @@
--- TestBench Template 
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
 
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
-USE ieee.numeric_std.ALL;
-use IEEE.std_logic_textio.all;
-
+library std;
 use std.textio.all;
 
-use ieee.std_logic_arith.all;
-use ieee.std_logic_unsigned.all;
+library work;
+use work.fsqrt_p.all;
 
-ENTITY fsqrt_tb IS
-END fsqrt_tb;
+entity fsqrt_tb is
+end fsqrt_tb;
 
-ARCHITECTURE behavior OF fsqrt_tb IS
+architecture behavior of fsqrt_tb is
 
-  -- Component Declaration
-  COMPONENT fsqrt
-    PORT(clk : in std_logic;
-         a : IN std_logic_vector(31 downto 0);
-         s : OUT std_logic_vector(31 downto 0));
-  END COMPONENT;
-
-  SIGNAL i1 :  std_logic_vector(31 downto 0);
-  SIGNAL o1 :  std_logic_vector(31 downto 0);
+  signal xrst, stall : std_logic;
+  signal i1 :  unsigned(31 downto 0);
+  signal o1 :  unsigned(31 downto 0);
   signal clk : std_logic;
   signal terminate : std_logic := '0';
-  signal t_start : std_logic_vector(31 downto 0) := x"00000000";
-  signal t_end   : std_logic_vector(31 downto 0) := x"00000000";
+  signal t_start : unsigned(31 downto 0) := x"00000000";
+  signal t_end   : unsigned(31 downto 0) := x"00000000";
 
-  file infile : text is in "fsqrt_test/testcase.txt";
-  file outfile : text is out "fsqrt_test/result.txt";
+  file infile : text is in "./fsqrt_test/testcase.txt";
+  file outfile : text is out "./fsqrt_test/result.txt";
   
-BEGIN
+begin
 
-  -- Component Instantiation
-  uut: fsqrt PORT MAP(
-    clk => clk,
-    a => i1,
-    s => o1);
+  xrst  <= '1';
+  stall <= '0';
 
-  --  Test Bench Statements
+  uut : fsqrt port map(
+    clk   => clk,
+    xrst  => xrst,
+    stall => stall,
+    a     => i1,
+    s     => o1);
+
   tb : process (clk)
-    variable my_line, out_line : LINE;
-    variable a, b : std_logic_vector(31 downto 0);
-    variable t : std_logic_vector(31 downto 0);
-  BEGIN
+    variable my_line, out_line : line;
+    variable a : std_logic_vector(31 downto 0);
+    variable t : unsigned(31 downto 0);
+  begin
 
     if rising_edge(clk) then
-      --wait for 100 ns; -- wait until global set/reset completes
-
-      -- Add user defined stimulus here
-
       if not endfile(infile) then
         readline(infile, my_line);
         read(my_line, a);
 
-        i1 <= a;
+        i1 <= unsigned(a);
       else
         t := t_end;
-        if t >= 3 then
+        if t >= 2 then
           terminate <= '1';
         end if;
         t_end <= t + 1;
       end if;
-      --wait for 2 ns;
 
-      b := o1;
-
-      if t_start >= 4 then
-        write(out_line, b);
+      if t_start >= 3 then
+        write(out_line, std_logic_vector(o1));
         writeline(outfile, out_line);
       end if;
       t_start <= t_start + 1;
-    end if;
-
-
-  END PROCESS;
-
-  --  End Test Bench
+   end if;
+  end process;
 
   clockgen: process  
   begin
@@ -91,5 +76,5 @@ BEGIN
       wait;
     end if;
   end process;
-  
+
 end behavior;
