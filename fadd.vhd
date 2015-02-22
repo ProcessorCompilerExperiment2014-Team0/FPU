@@ -90,6 +90,7 @@ architecture blackbox of FADD is
   variable carry : std_logic; -- round even carry
   variable temp  : std_logic_vector(25 downto 0); -- round_evenに渡すときに使用
 
+  VARIABLE li : line;
   begin
 
   if a(30 downto 0) > b(30 downto 0) then
@@ -225,6 +226,9 @@ architecture blackbox of FADD is
                   temp(25 downto 0) := sum_mant(23 downto 0) & "00";
                 end if;
                 sum(22 downto 0) := round_even(temp);
+                if temp >= "11" & x"fffffc" then
+                  sum(30 downto 23) := sum(30 downto 23) + 1;
+                end if;
               else
                 sum(22 downto 0) := sum_mant(22 downto 0);
                 sum(22 downto 0) := std_logic_vector(shift_left(unsigned(sum(22 downto 0)), (conv_integer(i) - 4)));

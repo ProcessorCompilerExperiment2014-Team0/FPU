@@ -10,7 +10,8 @@ LDFLAGS = -lm
 TESTBENCH = fcmp_gt_tb ftoi_tb itof_tb
 SOURCES =  fcmp.vhd fcmp_gt_tb.vhd ftoi_tb.vhd ftoi_func.vhd itof_tb.vhd itof_func.vhd fpu_common.vhd \
   fsqrt_tb.vhd fsqrt.vhd table.vhd \
-  finv_tb.vhd finv.vhd
+  finv_tb.vhd finv.vhd \
+  fadd.vhd fadd_tb.vhd
 GHDLC = ghdl
 GHDLFLAGS  = -g --ieee=synopsys --mb-comments -fexplicit
 GHDL_SIM_OPT = --stop-time=20ms
@@ -72,8 +73,19 @@ makeanswer_finv: makeanswer_finv.c finv_table.dat
 	$(CC) $< -o $@ $(CFLAGS) -lm
 makeanswer_fsqrt: makeanswer_fsqrt.c fsqrt_table.dat
 	$(CC) $< -o $@ $(CFLAGS) -lm
+testcase.txt: maketestcase
+	./maketestcase
 testcase-mono.txt: maketestcase_mono
 	./maketestcase_mono
+
+
+fadd_tb: work-obj93.cf fadd.vhd
+	$(GHDLC) -m $(GHDLFLAGS) fadd_tb
+test_fadd_vhdl: fadd_tb testcase.txt
+	-mkdir fadd_test/
+	-cp testcase.txt fadd_test/testcase.txt
+	$(GHDLC) -r $(GHDLFLAGS) fadd_tb
+
 
 test_finv_diff: test_finv_c test_finv_vhdl
 	diff answer.txt finv_test/result.txt
@@ -84,7 +96,6 @@ test_finv_vhdl: work-obj93.cf testcase-mono.txt
 	-mkdir finv_test/
 	-cp testcase-mono.txt finv_test/testcase.txt
 	$(GHDLC) -r $(GHDLFLAGS) finv_tb
-
 
 test_fsqrt_diff: test_fsqrt_c test_fsqrt_vhdl
 	diff answer.txt fsqrt_test/result.txt
