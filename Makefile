@@ -64,7 +64,7 @@ test_finv_all: table.o test_finv_all.o finv.o $(LIBS)
 
 clean:
 	rm -f $(EXES) $(TESTS) $(TXTS) *.o *.dat *~ work-obj93.cf \
-  maketable_finv maketable_fsqrt table.c
+  maketable_finv maketable_fsqrt table.c table.vhd
 
 .PHONY: all clean $(TESTBENCH)
 

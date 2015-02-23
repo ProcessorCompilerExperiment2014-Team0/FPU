@@ -13,6 +13,7 @@ test_fmul
 maketable_finv
 maketable_fsqrt
 table.c
+table.vhd
 a.out
 answer.txt
 testcase.txt
