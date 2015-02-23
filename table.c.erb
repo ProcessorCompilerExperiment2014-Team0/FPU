@@ -1,0 +1,23 @@
+require 'erb'
+mems = [["finv_table", 36, 1024, "finv_table.dat"],
+        ["fsqrt_table", 36, 1024, "fsqrt_table.dat"]]
+
+File.open("table.c", "w") do |f|
+  f.puts ERB.new(DATA.read, nil, '-').result(binding)
+end
+
+__END__
+#include <stdint.h>
+#include "def.h"
+
+<%- for name, width, len, fname in mems do %>
+uint64_t <%= name %>[<%= len %>] = {
+  <%- File.open(fname) do |f| -%>
+  <%- for i in 0...len do -%>
+  <%- break unless (l = f.gets) -%>
+  0X<%= l.chomp %>,
+  <%- end -%>
+  <%- end -%>
+  };
+<%- end %>
+
