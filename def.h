@@ -37,4 +37,7 @@ unsigned int round_even(unsigned int num);
 //"111111111111111111111111100" ～ "111111111111111111111111111" のとき。
 int round_even_carry(unsigned int num);
 
+extern uint64_t finv_table[1024];
+extern uint64_t fsqrt_table[1024];
+
 #endif

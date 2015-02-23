@@ -10,28 +10,10 @@
 #define MASK10 1023  //((1 << 11) - 1) << 12  MAX = 2048
 #define MASK13 8191     //仮数部下位13bit
 
-static bool finv_table_initialized = false;
-static uint64_t finv_table[1024];
-
-void initialize_finv_table() {
-  FILE *f = fopen("finv_table.dat", "r");
-  int i;
-
-  for (i=0; i<1024; i++)
-    fscanf(f, "%" SCNx64 "X\n", &finv_table[i]);
-
-  fclose(f);
-}
-
 uint32_t finv(uint32_t a_uint32) {
   
   union data_32bit a, result;
 
-  if (!finv_table_initialized) {
-    finv_table_initialized = true;
-    initialize_finv_table();
-  }
-  
   a.uint32 = a_uint32;
 
   if (a.exp == 255 && a.frac != 0) {  // NaN

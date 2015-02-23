@@ -9,28 +9,9 @@
 #define MASK9  8372224  // ((1 << 9) - 1) << 14 
 #define MASK14 16383    // 11111111111111
 
-static bool fsqrt_table_initalized = false;
-static uint64_t fsqrt_table[1024];
-
-void initalize_fsqrt_table() {
-  FILE *f = fopen("fsqrt_table.dat", "r");
-  int i;
-
-  for (i = 0; i < 1024; i++) {
-    fscanf(f, "%" SCNx64 "X\n", &fsqrt_table[i]);
-  }
-  
-  fclose(f);
-}
-
 uint32_t fsqrt(uint32_t a_uint32) {
   
   union data_32bit a, x, result;
- 
-  if (!fsqrt_table_initalized) {
-    fsqrt_table_initalized = true;
-    initalize_fsqrt_table();
-  }
  
   a.uint32 = a_uint32;
 

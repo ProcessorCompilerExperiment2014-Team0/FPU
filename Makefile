@@ -38,14 +38,14 @@ test_fadd: test_fadd.o fadd.o $(LIBS)
 test_fmul: test_fmul.o fmul.o $(LIBS)
 	$(LD) -o $@ $^ $(LDFLAGS)
 
-test_finv: test_finv.o finv.o fadd.o fmul.o $(LIBS)
+test_finv: test_finv.o table.o finv.o fadd.o fmul.o $(LIBS)
 	$(LD) -o $@ $^ $(LDFLAGS)
 
-test_fsqrt: test_fsqrt.o fsqrt.o fadd.o fmul.o $(LIBS)
+test_fsqrt: test_fsqrt.o table.o fsqrt.o fadd.o fmul.o $(LIBS)
 	$(LD) -o $@ $^ $(LDFLAGS)
-maketable_finv: maketable_finv.c finv.c def.c
+maketable_finv: maketable_finv.c def.c
 	$(LD) -o $@ $^ $(LDFLAGS)
-maketable_fsqrt: maketable_fsqrt.c fsqrt.c def.c
+maketable_fsqrt: maketable_fsqrt.c def.c
 	$(LD) -o $@ $^ $(LDFLAGS)
 
 finv_table.dat: maketable_finv
@@ -54,10 +54,13 @@ fsqrt_table.dat: maketable_fsqrt
 	./maketable_fsqrt
 
 table.vhd: finv_table.dat fsqrt_table.dat
-	ruby table.erb
+	ruby table.vhd.erb
 
-test_finv_all: finv_table.dat test_finv_all.o finv.o $(LIBS)
-	$(LD) -o $@ $(filter %.o, $^) $(LDFLAGS)
+table.c: finv_table.dat fsqrt_table.dat
+	ruby table.c.erb
+
+test_finv_all: table.o test_finv_all.o finv.o $(LIBS)
+	$(LD) -o $@ $^ $(LDFLAGS)
 
 clean:
 	rm -f $(EXES) $(TESTS) $(TXTS) *.o *~ work-obj93.cf
@@ -69,10 +72,10 @@ gen_input: ftrc.o itof.o gen_input.o def.o
 work-obj93.cf: $(SOURCES)
 	$(GHDLC) -i $(GHDLFLAGS) $(SOURCES)
 
-makeanswer_finv: makeanswer_finv.c finv_table.dat
-	$(CC) $< -o $@ $(CFLAGS) -lm
-makeanswer_fsqrt: makeanswer_fsqrt.c fsqrt_table.dat
-	$(CC) $< -o $@ $(CFLAGS) -lm
+makeanswer_finv: makeanswer_finv.o table.o
+	$(CC) $^ -o $@ $(CFLAGS) -lm
+makeanswer_fsqrt: makeanswer_fsqrt.o table.o
+	$(CC) $^ -o $@ $(CFLAGS) -lm
 testcase.txt: maketestcase
 	./maketestcase
 testcase-mono.txt: maketestcase_mono
