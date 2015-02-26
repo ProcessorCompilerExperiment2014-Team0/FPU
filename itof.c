@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include "def.h"
 
-
 //最近接偶数への丸め(round to the nearest even) -- 注：26bit -> 23bit
 unsigned int round_even_26bit(unsigned int num) {
   int right4;
@@ -16,7 +15,7 @@ unsigned int round_even_26bit(unsigned int num) {
 }
 
 //最近接偶数丸めにより仮数部がオーバーフローしてしまうときに'1'を返す。 注意: 26bit
-//"11111111111111111111111100" ～ "11111111111111111111111111" のとき。
+//"11 1111 1111 1111 1111 1111 1100" ～ "11 1111 1111 11111 1111 1111 1111"
 int round_even_carry_26bit(unsigned int num) {
   if (0x3fffffcu <= num && num <= 0x3ffffffu)
     return 1;
@@ -48,7 +47,7 @@ uint32_t itof(uint32_t a) {
     if (flag == 0) {
       temp = a;
     } else {
-      temp = ~(a-1);
+      temp = ~((a & 0x7fffffffu) - 1);
     }
 
     i = 30;
@@ -61,20 +60,15 @@ uint32_t itof(uint32_t a) {
     
     if (i < 24) {
       frac = temp & FRAC_MAX;
-      frac = frac << (23 - i);  // 23 - (i - 1) ... shitr(0埋め)
+      frac = frac << (23 - i);  // 23 - (i - 1) ... shiftr(0埋め)
       result.frac = frac;
     } else {
-      if (i == 24) {
-	frac_grs = (temp & FRAC_MAX) << 3;
-      } else if (i == 25) {
-	frac_grs = (temp & FRAC_MAX) << 2;
-      } else if (i == 26) {
-	frac_grs = (temp & FRAC_MAX) << 1;
-      } else if (i == 27) {
-	frac_grs = temp & FRAC_MAX;
+      if (i >= 24 && i <= 26) {
+	temp = temp & ((1 << i) - 1);
+	frac_grs = temp << (26 - i);
       } else {
 	s_bit = or_nbit(temp, (i-25));
-	frac_grs = (temp << (32 - i)) >> 6;
+	frac_grs = (temp >> (i-25)) << 1;
 	frac_grs = frac_grs | s_bit;
       }
       result.frac = round_even_26bit(frac_grs);
