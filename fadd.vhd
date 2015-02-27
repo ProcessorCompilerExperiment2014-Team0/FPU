@@ -80,7 +80,9 @@ package body fadd_p is
 
     lzc := leading_zero(rawfrac);
 
-    if lzc = 0 then
+    if lzc = 0 and fbig.expt = 254 then
+      fc.expt := (others => '1');
+    elsif lzc = 0 then
       fc.expt := fbig.expt + 1;
     elsif lzc = 25 or fbig.expt < lzc then
       fc.expt := (others => '0');
@@ -88,7 +90,9 @@ package body fadd_p is
       fc.expt := fbig.expt - (lzc - 1);
     end if;
 
-    if lzc = 0 then
+    if lzc = 0  and fbig.expt = 254 then
+      fc.frac := (others => '0');
+    elsif lzc = 0 then
       fc.frac := rawfrac(23 downto 1);
     elsif lzc = 25 or fbig.expt < lzc then
       fc.frac := (others => '0');
@@ -102,6 +106,18 @@ package body fadd_p is
       return b;
     elsif fb.expt = 0 then
       return a;
+    elsif fa.expt = 255  and fa.frac /= 0 then
+      return VAL_NAN;
+    elsif fb.expt = 255 and fb.frac /= 0 then
+      return VAL_NAN;
+    elsif fa.expt = 255 then
+      if fb.expt = 255 and fa.sign /= fb.sign then
+        return VAL_NAN;
+      else
+        return a;
+      end if;
+    elsif fb.expt = 255 then
+      return b;
     else
       return fpu_data(fc);
     end if;
