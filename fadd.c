@@ -23,7 +23,7 @@ leading_zero_25(uint32_t a)
 uint32_t
 fadd(uint32_t a, uint32_t b)
 {
-  const uint32_t B22TO0 = (1<<22)-1;
+  const uint32_t B22TO0 = (1<<23)-1;
 
   union data_32bit fa, fb, fc;
   union data_32bit fbig, fsmall;
@@ -59,7 +59,7 @@ fadd(uint32_t a, uint32_t b)
     smallfrac = 0;
   }
 
-  if (fa.sign != fb.sign && smallfrac > bigfrac)  {
+  if (fa.sign != fb.sign && smallfrac > bigfrac) {
     rawfrac = smallfrac - bigfrac;
   } else if (fa.sign != fb.sign && bigfrac >= smallfrac)  {
     rawfrac = bigfrac - smallfrac;
