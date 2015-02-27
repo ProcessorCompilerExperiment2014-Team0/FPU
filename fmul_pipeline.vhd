@@ -46,7 +46,6 @@ entity fmul_pipeline is
 end entity fmul_pipeline;
 
 architecture behavior of fmul_pipeline is
-  signal a_fmul, b_fmul, s_fmul : std_logic_vector(31 downto 0);
 
   type latch_t is record
     a : unsigned(31 downto 0);
@@ -63,12 +62,7 @@ architecture behavior of fmul_pipeline is
 
 begin
 
-  fmul_comb : fmul port map (
-    a => a_fmul,
-    b => b_fmul,
-    s => s_fmul);
-
-  comb: process (r, a, b, stall, s_fmul) is
+  comb: process (r, a, b, stall) is
     variable v: latch_t;
   begin
     v := r;
@@ -76,9 +70,7 @@ begin
     if stall /= '1' then
       v.a    := a;
       v.b    := b;
-      v.s    := unsigned(s_fmul);
-      a_fmul <= std_logic_vector(r.a);
-      b_fmul <= std_logic_vector(r.b);
+      v.s    := fmul(r.a, r.b);
     end if;
 
     s   <= r.s;

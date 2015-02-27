@@ -6,9 +6,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library work;
-use work.fadd_p.all;
-
 package fadd_pipeline_p is
 
   component fadd_pipeline is
@@ -46,7 +43,6 @@ entity fadd_pipeline is
 end entity fadd_pipeline;
 
 architecture behavior of fadd_pipeline is
-  signal a_fadd, b_fadd, s_fadd : std_logic_vector(31 downto 0);
 
   type latch_t is record
     a : unsigned(31 downto 0);
@@ -63,22 +59,15 @@ architecture behavior of fadd_pipeline is
 
 begin
 
-  fadd_comb : fadd port map (
-    a => a_fadd,
-    b => b_fadd,
-    s => s_fadd);
-
-  comb: process (r, a, b, stall, s_fadd) is
-    variable v: latch_t;
+  comb : process (r, a, b, stall) is
+    variable v : latch_t;
   begin
     v := r;
 
     if stall /= '1' then
       v.a    := a;
       v.b    := b;
-      v.s    := unsigned(s_fadd);
-      a_fadd <= std_logic_vector(r.a);
-      b_fadd <= std_logic_vector(r.b);
+      v.s    := fadd(r.a, r.b);
     end if;
 
     s   <= r.s;

@@ -1,38 +1,23 @@
-library IEEE;
-use IEEE.std_logic_1164.all;
-
-package fmul_p is
-
-  component fmul is
-    port (
-      a, b : in std_logic_vector(31 downto 0);
-      s    : out std_logic_vector(31 downto 0));
-  end component;
-
-end package;
-
-
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.std_logic_misc.all;
-use IEEE.numeric_std.all;
-use IEEE.std_logic_unsigned.all;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 library work;
 use work.fpu_common_p.all;
 
-entity fmul is
-  Port(A,B : in  std_logic_vector(31 downto 0);
-       S   : out std_logic_vector(31 downto 0));
-end entity fmul;
+package fmul_p is
 
-architecture blackbox of FMUL is
+  function fmul (a : fpu_data_t; b : fpu_data_t) return fpu_data_t;
+
+end package;
+
+package body fmul_p is
 
   -- round_even : 26bit -> 23bit
-  function round_even(num: std_logic_vector(25 downto 0))
-    return std_logic_vector
+  function round_even(num: unsigned(25 downto 0))
+    return unsigned
   is
-    variable result : std_logic_vector(22 downto 0);
+    variable result : unsigned(22 downto 0);
   begin
     if (4 < num(3 downto 0) and num(3 downto 0) < 8) or (11 < num(3 downto 0)) then
       result := num(25 downto 3) + 1;
@@ -43,7 +28,7 @@ architecture blackbox of FMUL is
   end round_even;
 
   -- round_even_carry : 26bit -> 1bit
-  function round_even_carry(num: std_logic_vector(25 downto 0))
+  function round_even_carry(num: unsigned(25 downto 0))
     return std_logic
   is
     variable carry : std_logic;
@@ -57,35 +42,37 @@ architecture blackbox of FMUL is
     return carry;
   end round_even_carry;
 
-  function do_fmul(a: std_logic_vector(31 downto 0); b: std_logic_vector(31 downto 0))
-    return std_logic_vector
+  function fmul (
+    a: fpu_data_t;
+    b: fpu_data_t)
+    return fpu_data_t
   is
-    constant nan   : std_logic_vector(31 downto 0) := x"7fffffff";
-    constant zero  : std_logic_vector(31 downto 0) := x"00000000";
-    constant nzero : std_logic_vector(31 downto 0) := x"80000000";
-    constant inf   : std_logic_vector(31 downto 0) := x"7f800000";
-    constant ninf  : std_logic_vector(31 downto 0) := x"ff800000";
+    constant nan   : unsigned(31 downto 0) := x"7fffffff";
+    constant zero  : unsigned(31 downto 0) := x"00000000";
+    constant nzero : unsigned(31 downto 0) := x"80000000";
+    constant inf   : unsigned(31 downto 0) := x"7f800000";
+    constant ninf  : unsigned(31 downto 0) := x"ff800000";
     
-    variable result : std_logic_vector(31 downto 0);
-    variable a_exp  : std_logic_vector(8 downto 0);  -- 1bit余分に。
-    variable b_exp  : std_logic_vector(8 downto 0);
-    variable exp    : std_logic_vector(8 downto 0);
-    variable a_hmant : std_logic_vector(13 downto 0);
-    variable b_hmant : std_logic_vector(13 downto 0);
-    variable a_lmant : std_logic_vector(13 downto 0); -- 14bit。0詰め必要。
-    variable b_lmant : std_logic_vector(13 downto 0);
-    variable product : std_logic_vector(27 downto 0);
-    variable ah_bh   : std_logic_vector(27 downto 0);
-    variable ah_bl   : std_logic_vector(27 downto 0);
-    variable al_bh   : std_logic_vector(27 downto 0);
+    variable result : unsigned(31 downto 0);
+    variable a_exp  : unsigned(8 downto 0);  -- 1bit余分に。
+    variable b_exp  : unsigned(8 downto 0);
+    variable exp    : unsigned(8 downto 0);
+    variable a_hmant : unsigned(13 downto 0);
+    variable b_hmant : unsigned(13 downto 0);
+    variable a_lmant : unsigned(13 downto 0); -- 14bit。0詰め必要。
+    variable b_lmant : unsigned(13 downto 0);
+    variable product : unsigned(27 downto 0);
+    variable ah_bh   : unsigned(27 downto 0);
+    variable ah_bl   : unsigned(27 downto 0);
+    variable al_bh   : unsigned(27 downto 0);
     variable s_bit   : std_logic;
-    variable mant    : std_logic_vector(25 downto 0);
+    variable mant    : unsigned(25 downto 0);
   begin 
     if (a(30 downto 23) = 255 and a(22 downto 0) /= 0) or
-       (b(30 downto 23) = 255 and b(22 downto 0) /= 0) then
+      (b(30 downto 23) = 255 and b(22 downto 0) /= 0) then
       result := nan;
     elsif (a(30 downto 23) = 255 and b(30 downto 23) = 0) or
-          (a(30 downto 23) = 0 and b(30 downto 23) = 255) then
+      (a(30 downto 23) = 0 and b(30 downto 23) = 255) then
       result := nan;
     elsif a(30 downto 23) = 255 or b(30 downto 23) = 255 then
       if a(31) = b(31) then
@@ -112,9 +99,7 @@ architecture blackbox of FMUL is
       ah_bh := a_hmant * b_hmant;  -- 14bit * 14bit = 28bit
       ah_bl := a_hmant * b_lmant;
       al_bh := a_lmant * b_hmant;
-      product := ah_bh
-                 + std_logic_vector(shift_right(unsigned(ah_bl), 10))
-                 + std_logic_vector(shift_right(unsigned(al_bh), 10));
+      product := ah_bh + shift_right(ah_bl, 10) + shift_right(al_bh, 10);
 
       if product(27) = '1' then -- 繰り上がりありの場合
         s_bit := product(1) or product(0);
@@ -134,7 +119,7 @@ architecture blackbox of FMUL is
 
       -- exp-127 が指数部に実際に使う値
       if exp > 127 then -- 指数部が正の場合
-        if (conv_integer(exp) - 127) > 254 then
+        if (to_integer(exp) - 127) > 254 then
           if a(31) = b(31) then
             result := inf;
           else
@@ -152,13 +137,7 @@ architecture blackbox of FMUL is
         end if;
       end if;
     end if;
-  return result;
-  end do_fmul;
+    return result;
+  end fmul;
 
-begin
-
-  S <= (others => 'X') when is_metavalue(A) or is_metavalue(B) else
-       do_fmul(A, B);
-
-end blackbox;
-
+end package body fmul_p;

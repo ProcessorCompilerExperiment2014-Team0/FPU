@@ -37,6 +37,8 @@ package fpu_common_p is
   function is_metavalue(v: std_logic_vector) return boolean;
   function is_metavalue(v: unsigned) return boolean;
 
+  function leading_zero (a : unsigned) return integer;
+
 end package;
 
 package body fpu_common_p is
@@ -107,5 +109,21 @@ package body fpu_common_p is
   begin
     return is_metavalue(std_logic_vector(v));
   end function;
+
+  function leading_zero (
+    a : unsigned)
+    return integer is
+  begin
+
+    for i in 0 to a'length - 1 loop
+      if a(a'length - 1 - i) = '1' then
+        return i;
+      end if;
+    end loop;
+
+    return a'length;
+
+  end function;
+
 
 end package body;

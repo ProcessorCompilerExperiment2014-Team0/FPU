@@ -6,9 +6,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library work;
-use work.fsub_p.all;
-
 package fsub_pipeline_p is
 
   component fsub_pipeline is
@@ -32,7 +29,8 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.fsub_p.all;
+use work.fpu_common_p.all;
+use work.fadd_p.all;
 use work.fsub_pipeline_p.all;
 
 entity fsub_pipeline is
@@ -46,7 +44,6 @@ entity fsub_pipeline is
 end entity fsub_pipeline;
 
 architecture behavior of fsub_pipeline is
-  signal a_fsub, b_fsub, s_fsub : std_logic_vector(31 downto 0);
 
   type latch_t is record
     a : unsigned(31 downto 0);
@@ -63,12 +60,7 @@ architecture behavior of fsub_pipeline is
 
 begin
 
-  fsub_comb : fsub port map (
-    a => a_fsub,
-    b => b_fsub,
-    s => s_fsub);
-
-  comb: process (r, a, b, stall, s_fsub) is
+  comb: process (r, a, b, stall) is
     variable v: latch_t;
   begin
     v := r;
@@ -76,9 +68,7 @@ begin
     if stall /= '1' then
       v.a    := a;
       v.b    := b;
-      v.s    := unsigned(s_fsub);
-      a_fsub <= std_logic_vector(r.a);
-      b_fsub <= std_logic_vector(r.b);
+      v.s    := fsub(r.a, r.b);
     end if;
 
     s   <= r.s;
@@ -95,3 +85,4 @@ begin
   end process seq;
 
 end architecture behavior;
+
