@@ -110,7 +110,7 @@ int main(void) {
     correct.fl32 = (float)a.uint32;
     
     count = count_diff(result.uint32, correct.uint32);
-    if (count < PERMIT+1) {
+    if ((-1 * PERMIT - 1) < count && count < PERMIT+1) {
       count_total_diff[count]++;
     } else {
       if (total_mistakes <= 5) {
