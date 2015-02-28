@@ -113,3 +113,9 @@ fadd(uint32_t a, uint32_t b)
         return fc.uint32;
     }
 }
+
+uint32_t
+fsub(uint32_t a, uint32_t b)
+{
+    return fadd(a,  b ^ (1 << 31));
+}

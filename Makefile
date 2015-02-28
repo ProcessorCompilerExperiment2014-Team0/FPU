@@ -22,8 +22,6 @@ fmul: fmul_main.o fmul.o $(LIBS)
 
 fneg: fneg_main.o fneg.o $(LIBS)
 
-fsub: fsub_main.o fsub.o fadd.o fneg.o $(LIBS)
-
 finv: finv_main.o finv.o fadd.o fmul.o $(LIBS)
 	$(LD) -o $@ $^ $(LDFLAGS)
 
