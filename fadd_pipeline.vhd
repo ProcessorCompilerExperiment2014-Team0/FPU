@@ -128,10 +128,10 @@ begin
 
       if fa.expt = 0 then
         v.state1   := CORNER;
-        v.fcorner1 := b;
+        v.fcorner1 := fpu_data(fb);
       elsif fb.expt = 0 then
         v.state1   := CORNER;
-        v.fcorner1 := a;
+        v.fcorner1 := fpu_data(fa);
       elsif fa.expt = 255 and fa.frac /= 0 then
         v.state1   := CORNER;
         v.fcorner1 := VAL_NAN;
@@ -144,11 +144,11 @@ begin
         v.fcorner1 := VAL_NAN;
         else
           v.state1   := CORNER;
-          v.fcorner1 := a;
+          v.fcorner1 := fpu_data(fa);
         end if;
       elsif fb.expt = 255 then
           v.state1   := CORNER;
-          v.fcorner1 := b;
+          v.fcorner1 := fpu_data(fb);
       else
         v.state1 := NORMAL;
         v.fcorner1 := (others => '-');

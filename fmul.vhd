@@ -67,7 +67,12 @@ package body fmul_p is
     variable al_bh   : unsigned(27 downto 0);
     variable s_bit   : std_logic;
     variable mant    : unsigned(25 downto 0);
-  begin 
+  begin
+
+    if is_metavalue(a) or is_metavalue(b) then
+      return VAL_PLUS_ZERO;
+    end if;
+    
     if (a(30 downto 23) = 255 and a(22 downto 0) /= 0) or
       (b(30 downto 23) = 255 and b(22 downto 0) /= 0) then
       result := nan;
