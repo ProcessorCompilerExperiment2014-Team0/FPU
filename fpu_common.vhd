@@ -38,6 +38,7 @@ package fpu_common_p is
   function is_metavalue(v: unsigned) return boolean;
 
   function leading_zero (a : unsigned) return integer;
+  function or_nbit (a : unsigned; n : integer) return integer;
 
 end package;
 
@@ -125,5 +126,16 @@ package body fpu_common_p is
 
   end function;
 
+  function or_nbit (
+    a : unsigned;
+    n : integer)
+    return integer is
+  begin
+    if unsigned'(a and (shift_left(resize("1", a'length), n) - 1)) = 0 then
+      return 0;
+    else
+      return 1;
+    end if;
+  end function or_nbit;
 
 end package body;
