@@ -10,14 +10,14 @@ expfrac(union data_32bit a)
 }
 
 int
-leading_zero_25(uint32_t a)
+leading_zero_26(uint32_t a)
 {
     int i;
-    for (i=24; i >= 0; i--)
+    for (i=25; i >= 0; i--)
         if (((a >> i) & 1) != 0)
             break;
 
-    return 24-i;
+    return 25-i;
 }
 
 uint32_t
@@ -43,7 +43,8 @@ fadd(uint32_t a, uint32_t b)
         fc.sign = 0;
     }
 
-    if (fa.exp > fb.exp) {
+    if (fa.exp > fb.exp
+        || (fa.exp == fb.exp && fa.frac > fb.frac)) {
         fbig   = fa;
         fsmall = fb;
     } else {
@@ -52,35 +53,34 @@ fadd(uint32_t a, uint32_t b)
     }
 
     expdiff = fbig.exp - fsmall.exp;
-    bigfrac = (1<<23)+fbig.frac;
-    if (expdiff < 24) {
-        smallfrac = ((1 << 23) + fsmall.frac) >> expdiff;
+    bigfrac = (1<<24)+(fbig.frac<<1);
+    if (expdiff <= 24) {
+        smallfrac = ((1 << 24) + (fsmall.frac << 1)) >> expdiff;
+        smallfrac += or_nbit((1 << 24) + (fsmall.frac << 1), expdiff);
     } else {
         smallfrac = 0;
     }
 
-    if (fa.sign != fb.sign && smallfrac > bigfrac) {
-        rawfrac = smallfrac - bigfrac;
-    } else if (fa.sign != fb.sign && bigfrac >= smallfrac)  {
+    if (fa.sign != fb.sign)  {
         rawfrac = bigfrac - smallfrac;
     } else {
         rawfrac = bigfrac + smallfrac;
     }
 
-    lzc = leading_zero_25(rawfrac);
+    lzc = leading_zero_26(rawfrac);
 
     if (lzc == 0 && fbig.exp == 254) {
         fc.exp  = 255;
         fc.frac = 0;
     } else if (lzc == 0) {
         fc.exp  = fbig.exp + 1;
-        fc.frac = (rawfrac >> 1) & B22TO0;
-    } else if (lzc == 25 || fbig.exp < lzc) {
+        fc.frac = (rawfrac >> 2) & B22TO0;
+    } else if (lzc == 26 || fbig.exp < lzc) {
         fc.exp  = 0;
         fc.frac = 0;
     } else {
         fc.exp  = fbig.exp - (lzc - 1);
-        fc.frac = (rawfrac << (lzc - 1)) & B22TO0;
+        fc.frac = ((rawfrac << (lzc - 1)) >> 1) & B22TO0;
     }
 
     if (fa.exp == 0) {

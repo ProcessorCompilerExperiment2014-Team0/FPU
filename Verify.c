@@ -23,12 +23,12 @@
  *                      符号付き 0 に潰す (ビットフラグで指定)
  *  OUT_PLUS_ZERO:      正規化数どうしの演算結果が非正規化数になる場合は
  *                      +0 に潰す (ビットフラグで指定) */
-#define SUBNORMAL   SUBNORMAL_ANY
+#define SUBNORMAL   (REGARD_ZERO | SUBNORMAL_ANY)
 
 /*  [丸め]
  *  ROUND_EVEN:     偶数丸め
  *  TRUNCATE:       0方向への丸め (チェックが雑になります) */
-#define ROUNDING    ROUND_EVEN
+#define ROUNDING    TRUNCATE
 
 
 #define SYSTEM_DEFAULT  0

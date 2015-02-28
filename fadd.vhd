@@ -22,6 +22,18 @@ end package;
 
 package body fadd_p is
 
+  function or_nbit (
+    a : unsigned;
+    n : integer)
+    return integer is
+  begin
+    if unsigned'(a and (shift_left(resize("1", a'length), n) - 1)) = 0 then
+      return 0;
+    else
+      return 1;
+    end if;
+  end function or_nbit;
+
   function fadd (
     a : fpu_data_t;
     b : fpu_data_t)
@@ -33,7 +45,7 @@ package body fadd_p is
     variable lzc                : integer range 0 to 31;
     variable expdiff            : integer range 0 to 255;
     variable bigfrac, smallfrac : unsigned(23 downto 0);
-    variable rawfrac            : unsigned(24 downto 0);
+    variable rawfrac            : unsigned(25 downto 0);
 
   begin
 
@@ -54,7 +66,7 @@ package body fadd_p is
 
     ---------------------------------------------------------------------------
 
-    if fa.expt > fb.expt then
+    if fa.expt > fb.expt or (fa.expt = fb.expt and fa.frac > fb.frac) then
       fbig   := fa;
       fsmall := fb;
     else
@@ -63,16 +75,15 @@ package body fadd_p is
     end if;
 
     expdiff   := to_integer(fbig.expt - fsmall.expt);
-    bigfrac   := "1" & fbig.frac;
-    if expdiff < 24 then
-      smallfrac := shift_right("1" & fsmall.frac, expdiff);
+    bigfrac   := "1" & fbig.frac & "0";
+    if expdiff <= 24 then
+      smallfrac := shift_right("1" & fsmall.frac & "0", expdiff)
+                   + or_nbit("1" & fsmall.frac & "0", expdiff);
     else
       smallfrac := (others => '0');
     end if;
 
-    if fa.sign /= fb.sign and smallfrac > bigfrac then
-      rawfrac := resize(smallfrac, 25) - resize(bigfrac, 25);
-    elsif fa.sign /= fb.sign and smallfrac <= bigfrac then
+    if fa.sign /= fb.sign then
       rawfrac := resize(bigfrac, 25) - resize(smallfrac, 25);
     else
       rawfrac :=  resize(smallfrac, 25) + resize(bigfrac, 25);
@@ -84,20 +95,20 @@ package body fadd_p is
       fc.expt := (others => '1');
     elsif lzc = 0 then
       fc.expt := fbig.expt + 1;
-    elsif lzc = 25 or fbig.expt < lzc then
+    elsif lzc = 26 or fbig.expt < lzc then
       fc.expt := (others => '0');
     else
       fc.expt := fbig.expt - (lzc - 1);
     end if;
 
-    if lzc = 0  and fbig.expt = 254 then
+    if lzc = 0 and fbig.expt = 254 then
       fc.frac := (others => '0');
     elsif lzc = 0 then
-      fc.frac := rawfrac(23 downto 1);
-    elsif lzc = 25 or fbig.expt < lzc then
+      fc.frac := rawfrac(24 downto 2);
+    elsif lzc = 26 or fbig.expt < lzc then
       fc.frac := (others => '0');
     else
-      fc.frac := shift_left(rawfrac, lzc - 1)(22 downto 0);
+      fc.frac := shift_left(rawfrac, lzc - 1)(23 downto 1);
     end if;
 
     ---------------------------------------------------------------------------
