@@ -9,6 +9,8 @@ use ieee.numeric_std.all;
 package fadd_pipeline_p is
 
   component fadd_pipeline is
+    generic (
+      negate_b : boolean);
     port (
       clk   : in  std_logic;
       xrst  : in  std_logic;
@@ -33,6 +35,8 @@ use work.fpu_common_p.all;
 use work.fadd_pipeline_p.all;
 
 entity fadd_pipeline is
+  generic (
+    negate_b : boolean := false);
   port (
     clk   : in  std_logic;
     xrst  : in  std_logic;
@@ -79,8 +83,12 @@ begin
       -- Stage 1
       -------------------------------------------------------------------------
 
-      v.a    := a;
-      v.b    := b;
+      v.a := a;
+      if negate_b then
+        v.b := not b(31) & b(30 downto 0);
+      else
+        v.b := b;
+      end if;
 
       -------------------------------------------------------------------------
       -- Stage 2
@@ -119,9 +127,9 @@ begin
       end if;
 
       if fa.sign /= fb.sign then
-        rawfrac := resize(bigfrac, 25) - resize(smallfrac, 25);
+        rawfrac := resize(bigfrac, 26) - resize(smallfrac, 26);
       else
-        rawfrac :=  resize(smallfrac, 25) + resize(bigfrac, 25);
+        rawfrac :=  resize(smallfrac, 26) + resize(bigfrac, 26);
       end if;
 
       lzc := leading_zero(rawfrac);
