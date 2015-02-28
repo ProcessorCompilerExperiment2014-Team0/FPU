@@ -9,9 +9,7 @@ LDFLAGS = -lm
 
 TESTBENCH = fcmp_gt_tb ftoi_tb itof_tb
 SOURCES =  fcmp.vhd fcmp_gt_tb.vhd ftoi_tb.vhd ftoi_func.vhd itof_tb.vhd itof_func.vhd fpu_common.vhd \
-  fsqrt_tb.vhd fsqrt.vhd table.vhd \
-  finv_tb.vhd finv.vhd \
-  fadd.vhd fadd_tb.vhd
+  fsqrt_tb.vhd fsqrt.vhd table.vhd fadd_pipeline.vhd fadd_tb.vhd finv.vhd finv_tb.vhd
 GHDLC = ghdl
 GHDLFLAGS  = -g --ieee=synopsys --mb-comments -fexplicit
 GHDL_SIM_OPT = --stop-time=20ms
@@ -30,6 +28,9 @@ finv: finv_main.o finv.o fadd.o fmul.o $(LIBS)
 	$(LD) -o $@ $^ $(LDFLAGS)
 
 fsqrt: fsqrt_main.o fsqrt.o fadd.o fmul.o $(LIBS)
+	$(LD) -o $@ $^ $(LDFLAGS)
+
+Verify: Verify.o fadd.o $(LIBS)
 	$(LD) -o $@ $^ $(LDFLAGS)
 
 test_fadd: test_fadd.o fadd.o $(LIBS)
@@ -73,22 +74,27 @@ gen_input: ftrc.o itof.o gen_input.o def.o
 work-obj93.cf: $(SOURCES)
 	$(GHDLC) -i $(GHDLFLAGS) $(SOURCES)
 
-makeanswer_finv: makeanswer_finv.o table.o
+makeanswer_fadd.o: fadd.c
+makeanswer_fadd: makeanswer_fadd.o
 	$(CC) $^ -o $@ $(CFLAGS) -lm
-makeanswer_fsqrt: makeanswer_fsqrt.o table.o
+makeanswer_finv: makeanswer_finv.o table.o finv.c
+	$(CC) $^ -o $@ $(CFLAGS) -lm
+makeanswer_fsqrt: makeanswer_fsqrt.o table.o fsqrt.c
 	$(CC) $^ -o $@ $(CFLAGS) -lm
 testcase.txt: maketestcase
 	./maketestcase
 testcase-mono.txt: maketestcase_mono
 	./maketestcase_mono
 
-
-fadd_tb: work-obj93.cf fadd.vhd
+test_fadd_diff: test_fadd_c test_fadd_vhdl
+	diff answer.txt fadd_test/result.txt
+test_fadd_c: makeanswer_fadd testcase.txt
+	./makeanswer_fadd
+test_fadd_vhdl: work-obj93.cf testcase.txt
 	$(GHDLC) -m $(GHDLFLAGS) fadd_tb
-test_fadd_vhdl: fadd_tb testcase.txt
 	-mkdir fadd_test/
 	-cp testcase.txt fadd_test/testcase.txt
-	$(GHDLC) -r $(GHDLFLAGS) fadd_tb
+	$(GHDLC) -r $(GHDLFLAGS) fadd_tb --wave=faddtb.ghw
 
 
 test_finv_diff: test_finv_c test_finv_vhdl
@@ -110,6 +116,7 @@ test_fsqrt_vhdl: work-obj93.cf testcase-mono.txt
 	-mkdir fsqrt_test/
 	-cp testcase-mono.txt fsqrt_test/testcase.txt
 	$(GHDLC) -r $(GHDLFLAGS) fsqrt_tb
+
 $(TESTBENCH): work-obj93.cf gen_input
 	$(GHDLC) -m $(GHDLFLAGS) $@
 	./gen_input $@ | $(GHDLC) -r $(GHDLFLAGS) $@ $(GHDL_SIM_OPT) --wave=$@.ghw

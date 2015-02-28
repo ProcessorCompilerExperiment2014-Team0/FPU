@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include "def.h"
 
+#define DEBUG 0
+
 uint32_t
 expfrac(union data_32bit a)
 {
@@ -54,7 +56,7 @@ fadd(uint32_t a, uint32_t b)
 
     expdiff = fbig.exp - fsmall.exp;
     bigfrac = (1<<24)+(fbig.frac<<1);
-    if (expdiff <= 24) {
+    if (expdiff <= 25) {
         smallfrac = ((1 << 24) + (fsmall.frac << 1)) >> expdiff;
         smallfrac += or_nbit((1 << 24) + (fsmall.frac << 1), expdiff);
     } else {
@@ -68,6 +70,14 @@ fadd(uint32_t a, uint32_t b)
     }
 
     lzc = leading_zero_26(rawfrac);
+
+    #if DEBUG
+    printf("expdiff   : %08X\n", expdiff);
+    printf("smallfrac : %08X\n", smallfrac);
+    printf("bigfrac   : %08X\n", bigfrac);
+    printf("rawfrac   : %08X\n", rawfrac);
+    printf("lzc       : %08X\n", lzc);
+    #endif
 
     if (lzc == 0 && fbig.exp == 254) {
         fc.exp  = 255;

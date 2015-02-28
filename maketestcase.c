@@ -40,7 +40,7 @@ void output_sub(uint32_t num, FILE *fp) {
 
 void output(uint32_t a, uint32_t b, FILE *fp) {
   output_sub(a,fp);
-  fprintf(fp, "\n");
+  fprintf(fp, " ");
   output_sub(b,fp);
   fprintf(fp, "\n");
   //fprintf(fp, "%08x %08x\n", a, b);                 //修正
