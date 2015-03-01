@@ -135,7 +135,6 @@ begin
 
   begin
     v        := r;
-    v.state0 := CORNER;
     en       := '0';
     addr     := (others => '-');
 
@@ -144,6 +143,8 @@ begin
       rom_addr <= addr;
     else
       -- 1st stage
+      v.state0 := CORNER;
+
       if is_metavalue(a) then
         v.bridge0 := VAL_NAN;
       else
@@ -207,9 +208,10 @@ begin
             ans       := fpu_data(g);
           end if;
       end case;
+
+      s   <= ans;
     end if;
 
-    s   <= ans;
     rin <= v;
   end process comb;
 

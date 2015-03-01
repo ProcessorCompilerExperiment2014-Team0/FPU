@@ -135,7 +135,6 @@ begin
 
   begin
     v        := r;
-    v.state0 := CORNER;
     en       := '0';
     addr     := (others => '-');
 
@@ -145,6 +144,8 @@ begin
       s        <= (others => '-');
     else
       -- 1st stage
+      v.state0 := CORNER;
+
       if is_metavalue(a) then
         v.bridge0 := VAL_NAN;
       else
