@@ -117,7 +117,7 @@ begin
     addr => rom_addr,
     data => rom_data);
 
-  comb : process (r, a, rom_data) is
+  comb : process (r, a, stall, rom_data) is
 
     variable v    : latch_t;
     -- variables for 1st stage
@@ -140,9 +140,8 @@ begin
     addr     := (others => '-');
 
     if stall = '1' then
-      rom_en   <= en;
+      rom_en   <= r.en;
       rom_addr <= addr;
-      s        <= (others => '-');
     else
       -- 1st stage
       if is_metavalue(a) then
@@ -208,10 +207,9 @@ begin
             ans       := fpu_data(g);
           end if;
       end case;
-
-      s <= ans;
     end if;
 
+    s   <= ans;
     rin <= v;
   end process comb;
 

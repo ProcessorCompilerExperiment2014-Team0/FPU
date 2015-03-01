@@ -117,7 +117,7 @@ begin
     addr => rom_addr,
     data => rom_data);
 
-  comb : process (r, a, rom_data) is
+  comb : process (r, a, stall, rom_data) is
 
     variable v    : latch_t;
     -- variables for 1st stage
