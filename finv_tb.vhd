@@ -22,8 +22,8 @@ architecture behavior of finv_tb is
   signal t_start : unsigned(31 downto 0) := x"00000000";
   signal t_end   : unsigned(31 downto 0) := x"00000000";
 
-  file infile : text is in "fsqrt_test/testcase.txt";
-  file outfile : text is out "fsqrt_test/result.txt";
+  file infile : text is in "finv_test/testcase.txt";
+  file outfile : text is out "finv_test/result.txt";
   
 begin
 
