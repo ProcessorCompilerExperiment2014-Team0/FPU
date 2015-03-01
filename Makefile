@@ -75,9 +75,11 @@ work-obj93.cf: $(SOURCES)
 makeanswer_fadd.o: fadd.c
 makeanswer_fadd: makeanswer_fadd.o
 	$(CC) $^ -o $@ $(CFLAGS) -lm
-makeanswer_finv: makeanswer_finv.o table.o finv.c
+makeanswer_finv.o: finv.c
+makeanswer_finv: makeanswer_finv.o table.o
 	$(CC) $^ -o $@ $(CFLAGS) -lm
-makeanswer_fsqrt: makeanswer_fsqrt.o table.o fsqrt.c
+makeanswer_fsqrt.o: fsqrt.c
+makeanswer_fsqrt: makeanswer_fsqrt.o table.o
 	$(CC) $^ -o $@ $(CFLAGS) -lm
 testcase.txt: maketestcase
 	./maketestcase
@@ -92,7 +94,7 @@ test_fadd_vhdl: work-obj93.cf testcase.txt
 	$(GHDLC) -m $(GHDLFLAGS) fadd_tb
 	-mkdir fadd_test/
 	-cp testcase.txt fadd_test/testcase.txt
-	$(GHDLC) -r $(GHDLFLAGS) fadd_tb --wave=faddtb.ghw
+	$(GHDLC) -r $(GHDLFLAGS) fadd_tb
 
 
 test_finv_diff: test_finv_c test_finv_vhdl
@@ -103,7 +105,7 @@ test_finv_vhdl: work-obj93.cf testcase-mono.txt
 	$(GHDLC) -m $(GHDLFLAGS) finv_tb
 	-mkdir finv_test/
 	-cp testcase-mono.txt finv_test/testcase.txt
-	$(GHDLC) -r $(GHDLFLAGS) finv_tb
+	$(GHDLC) -r $(GHDLFLAGS) finv_tb --wave=finv.ghw
 
 test_fsqrt_diff: test_fsqrt_c test_fsqrt_vhdl
 	diff answer.txt fsqrt_test/result.txt
