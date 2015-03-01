@@ -140,7 +140,7 @@ begin
     addr     := (others => '-');
 
     if stall = '1' then
-      rom_en   <= r.en;
+      rom_en   <= en;
       rom_addr <= addr;
     else
       -- 1st stage
