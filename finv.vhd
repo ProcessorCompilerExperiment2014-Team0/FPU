@@ -117,7 +117,7 @@ begin
     addr => rom_addr,
     data => rom_data);
 
-  comb : process (r, a, rom_data) is
+  comb : process (r, a, stall, rom_data) is
 
     variable v    : latch_t;
     -- variables for 1st stage
@@ -135,16 +135,16 @@ begin
 
   begin
     v        := r;
-    v.state0 := CORNER;
     en       := '0';
     addr     := (others => '-');
 
     if stall = '1' then
       rom_en   <= en;
       rom_addr <= addr;
-      s        <= (others => '-');
     else
       -- 1st stage
+      v.state0 := CORNER;
+
       if is_metavalue(a) then
         v.bridge0 := VAL_NAN;
       else
@@ -209,7 +209,7 @@ begin
           end if;
       end case;
 
-      s <= ans;
+      s   <= ans;
     end if;
 
     rin <= v;

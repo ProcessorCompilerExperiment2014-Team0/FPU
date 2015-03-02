@@ -9,9 +9,7 @@ LDFLAGS = -lm
 
 TESTBENCH = fcmp_gt_tb ftoi_tb itof_tb
 SOURCES =  fcmp.vhd fcmp_gt_tb.vhd ftoi_tb.vhd ftoi_func.vhd itof_tb.vhd itof_func.vhd fpu_common.vhd \
-  fsqrt_tb.vhd fsqrt.vhd table.vhd \
-  finv_tb.vhd finv.vhd \
-  fadd.vhd fadd_tb.vhd
+  fsqrt_tb.vhd fsqrt.vhd table.vhd fadd_pipeline.vhd fadd_tb.vhd finv.vhd finv_tb.vhd fmul_pipeline.vhd fmul_tb.vhd
 GHDLC = ghdl
 GHDLFLAGS  = -g --ieee=synopsys --mb-comments -fexplicit
 GHDL_SIM_OPT = --stop-time=20ms
@@ -24,12 +22,13 @@ fmul: fmul_main.o fmul.o $(LIBS)
 
 fneg: fneg_main.o fneg.o $(LIBS)
 
-fsub: fsub_main.o fsub.o fadd.o fneg.o $(LIBS)
-
 finv: finv_main.o finv.o fadd.o fmul.o $(LIBS)
 	$(LD) -o $@ $^ $(LDFLAGS)
 
 fsqrt: fsqrt_main.o fsqrt.o fadd.o fmul.o $(LIBS)
+	$(LD) -o $@ $^ $(LDFLAGS)
+
+Verify: Verify.o fadd.o $(LIBS)
 	$(LD) -o $@ $^ $(LDFLAGS)
 
 test_fadd: test_fadd.o fadd.o $(LIBS)
@@ -73,8 +72,13 @@ gen_input: ftrc.o itof.o gen_input.o def.o
 work-obj93.cf: $(SOURCES)
 	$(GHDLC) -i $(GHDLFLAGS) $(SOURCES)
 
+makeanswer_fadd.o: fadd.c
+makeanswer_fadd: makeanswer_fadd.o
+	$(CC) $^ -o $@ $(CFLAGS) -lm
+makeanswer_finv.o: finv.c
 makeanswer_finv: makeanswer_finv.o table.o
 	$(CC) $^ -o $@ $(CFLAGS) -lm
+makeanswer_fsqrt.o: fsqrt.c
 makeanswer_fsqrt: makeanswer_fsqrt.o table.o
 	$(CC) $^ -o $@ $(CFLAGS) -lm
 testcase.txt: maketestcase
@@ -82,13 +86,25 @@ testcase.txt: maketestcase
 testcase-mono.txt: maketestcase_mono
 	./maketestcase_mono
 
-
-fadd_tb: work-obj93.cf fadd.vhd
+test_fadd_diff: test_fadd_c test_fadd_vhdl
+	diff answer.txt fadd_test/result.txt
+test_fadd_c: makeanswer_fadd testcase.txt
+	./makeanswer_fadd
+test_fadd_vhdl: work-obj93.cf testcase.txt
 	$(GHDLC) -m $(GHDLFLAGS) fadd_tb
-test_fadd_vhdl: fadd_tb testcase.txt
 	-mkdir fadd_test/
 	-cp testcase.txt fadd_test/testcase.txt
 	$(GHDLC) -r $(GHDLFLAGS) fadd_tb
+
+test_fmul_diff: test_fmul_c test_fmul_vhdl
+	diff answer.txt fmul_test/result.txt
+test_fmul_c: makeanswer_fmul testcase.txt
+	./makeanswer_fmul
+test_fmul_vhdl: work-obj93.cf testcase.txt
+	$(GHDLC) -m $(GHDLFLAGS) fmul_tb
+	-mkdir fmul_test/
+	-cp testcase.txt fmul_test/testcase.txt
+	$(GHDLC) -r $(GHDLFLAGS) fmul_tb
 
 
 test_finv_diff: test_finv_c test_finv_vhdl
@@ -99,7 +115,7 @@ test_finv_vhdl: work-obj93.cf testcase-mono.txt
 	$(GHDLC) -m $(GHDLFLAGS) finv_tb
 	-mkdir finv_test/
 	-cp testcase-mono.txt finv_test/testcase.txt
-	$(GHDLC) -r $(GHDLFLAGS) finv_tb
+	$(GHDLC) -r $(GHDLFLAGS) finv_tb --wave=finv.ghw
 
 test_fsqrt_diff: test_fsqrt_c test_fsqrt_vhdl
 	diff answer.txt fsqrt_test/result.txt
@@ -110,6 +126,7 @@ test_fsqrt_vhdl: work-obj93.cf testcase-mono.txt
 	-mkdir fsqrt_test/
 	-cp testcase-mono.txt fsqrt_test/testcase.txt
 	$(GHDLC) -r $(GHDLFLAGS) fsqrt_tb
+
 $(TESTBENCH): work-obj93.cf gen_input
 	$(GHDLC) -m $(GHDLFLAGS) $@
 	./gen_input $@ | $(GHDLC) -r $(GHDLFLAGS) $@ $(GHDL_SIM_OPT) --wave=$@.ghw

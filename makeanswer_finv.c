@@ -47,7 +47,7 @@ uint32_t to_uint32(char *text) {
 int main(void) {
 
   FILE *input, *output;
-  char a_text[33], b_text[33];
+  char a_text[33];
   uint32_t a, ans;
 
   if ((input = fopen(INPUT, "r")) == NULL) {
@@ -65,8 +65,8 @@ int main(void) {
     output_32bit(ans, output);
   }
   
-  close(input);
-  close(output);
+  fclose(input);
+  fclose(output);
 
   printf("success (> %s)\n", OUTPUT);
 

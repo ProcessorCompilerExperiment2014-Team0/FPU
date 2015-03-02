@@ -37,6 +37,9 @@ package fpu_common_p is
   function is_metavalue(v: std_logic_vector) return boolean;
   function is_metavalue(v: unsigned) return boolean;
 
+  function leading_zero (a : unsigned(25 downto 0)) return integer;
+  function or_nbit (a : unsigned(24 downto 0); n : integer range 0 to 25) return integer;
+
 end package;
 
 package body fpu_common_p is
@@ -107,5 +110,81 @@ package body fpu_common_p is
   begin
     return is_metavalue(std_logic_vector(v));
   end function;
+
+  function leading_zero (
+    a : unsigned(25 downto 0))
+    return integer is
+  begin
+
+    if    a(25) = '1' then return 0;
+    elsif a(24) = '1' then return 1;
+    elsif a(23) = '1' then return 2;
+    elsif a(22) = '1' then return 3;
+    elsif a(21) = '1' then return 4;
+    elsif a(20) = '1' then return 5;
+    elsif a(19) = '1' then return 6;
+    elsif a(18) = '1' then return 7;
+    elsif a(17) = '1' then return 8;
+    elsif a(16) = '1' then return 9;
+    elsif a(15) = '1' then return 10;
+    elsif a(14) = '1' then return 11;
+    elsif a(13) = '1' then return 12;
+    elsif a(12) = '1' then return 13;
+    elsif a(11) = '1' then return 14;
+    elsif a(10) = '1' then return 15;
+    elsif a(9)  = '1' then return 16;
+    elsif a(8)  = '1' then return 17;
+    elsif a(7)  = '1' then return 18;
+    elsif a(6)  = '1' then return 19;
+    elsif a(5)  = '1' then return 20;
+    elsif a(4)  = '1' then return 21;
+    elsif a(3)  = '1' then return 22;
+    elsif a(2)  = '1' then return 23;
+    elsif a(1)  = '1' then return 24;
+    elsif a(0)  = '1' then return 25;
+    else  return 26;  end if;
+
+  end function;
+
+
+  function or_nbit (
+    a : unsigned(24 downto 0);
+    n : integer range 0 to 25)
+    return integer is
+    variable cond : boolean;
+  begin
+
+    case n is
+      when 0  => cond := true;
+      when 1  => cond := a(0 downto 0) = 0;
+      when 2  => cond := a(1 downto 0) = 0;
+      when 3  => cond := a(2 downto 0) = 0;
+      when 4  => cond := a(3 downto 0) = 0;
+      when 5  => cond := a(4 downto 0) = 0;
+      when 6  => cond := a(5 downto 0) = 0;
+      when 7  => cond := a(6 downto 0) = 0;
+      when 8  => cond := a(7 downto 0) = 0;
+      when 9  => cond := a(8 downto 0) = 0;
+      when 10 => cond := a(9 downto 0) = 0;
+      when 11 => cond := a(10 downto 0) = 0;
+      when 12 => cond := a(11 downto 0) = 0;
+      when 13 => cond := a(12 downto 0) = 0;
+      when 14 => cond := a(13 downto 0) = 0;
+      when 15 => cond := a(14 downto 0) = 0;
+      when 16 => cond := a(15 downto 0) = 0;
+      when 17 => cond := a(16 downto 0) = 0;
+      when 18 => cond := a(17 downto 0) = 0;
+      when 19 => cond := a(18 downto 0) = 0;
+      when 20 => cond := a(19 downto 0) = 0;
+      when 21 => cond := a(20 downto 0) = 0;
+      when 22 => cond := a(21 downto 0) = 0;
+      when 23 => cond := a(22 downto 0) = 0;
+      when 24 => cond := a(23 downto 0) = 0;
+      when 25 => cond := a(24 downto 0) = 0;
+    end case;
+
+    if cond then return 0; else return 1; end if;
+
+  end function or_nbit;
 
 end package body;
