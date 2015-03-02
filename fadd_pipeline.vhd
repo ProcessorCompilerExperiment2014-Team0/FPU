@@ -70,7 +70,6 @@ architecture behavior of fadd_pipeline is
     fcsign    : unsigned(0 downto 0);
     bigexpt2  : unsigned(7 downto 0);
     rawfrac   : unsigned(25 downto 0);
-    lzc       : integer range 0 to 31;
   end record latch_t;
 
   constant latch_init : latch_t := (
@@ -88,8 +87,7 @@ architecture behavior of fadd_pipeline is
     fcorner2  => (others => '0'),
     fcsign    => (others => '0'),
     bigexpt2  => (others => '0'),
-    rawfrac   => (others => '0'),
-    lzc       => 0);
+    rawfrac   => (others => '0'));
 
   signal r, rin : latch_t := latch_init;
 
@@ -98,11 +96,14 @@ begin
   comb : process (r, a, b, stall) is
     variable v : latch_t;
 
+    -- stage 1
     variable fa, fb, fc : float_t;
     variable fbig, fsmall : float_t;
-
+    -- stage 2
     variable smallfrac : unsigned(24 downto 0);
     variable bigfrac   : unsigned(24 downto 0);
+    -- stage 3
+    variable lzc : integer range 0 to 31;
 
     variable l : line;
 
@@ -205,49 +206,31 @@ begin
         v.rawfrac := resize(bigfrac, 26) + resize(smallfrac, 26);
       end if;
 
-      v.lzc := leading_zero(v.rawfrac);
-
-      -- Debug code
-      if false then
-        write(l, string'("expdiff : "));
-        hwrite(l, std_logic_vector(to_unsigned(r.expdiff, 32)));
-        writeline(output, l);
-        write(l, string'("smallfrac : "));
-        hwrite(l, std_logic_vector(resize(smallfrac, 32)));
-        writeline(output, l);
-        write(l, string'("bigfrac   : "));
-        hwrite(l, std_logic_vector(resize(bigfrac, 32)));
-        writeline(output, l);
-        write(l, string'("rawfrac   : "));
-        hwrite(l, std_logic_vector(resize(v.rawfrac, 32)));
-        writeline(output, l);
-        write(l, string'("lzc       : "));
-        hwrite(l, std_logic_vector(to_unsigned(v.lzc, 32)));
-        writeline(output, l);
-      end if;
-
+      -------------------------------------------------------------------------
       -- Stage 3
+      -------------------------------------------------------------------------
 
       fc.sign := r.fcsign;
+      lzc     := leading_zero(r.rawfrac);
 
-      if r.lzc = 0 and r.bigexpt2 = 254 then
+      if lzc = 0 and r.bigexpt2 = 254 then
         fc.expt := (others => '1');
-      elsif r.lzc = 0 then
+      elsif lzc = 0 then
         fc.expt := r.bigexpt2 + 1;
-      elsif r.lzc = 26 or r.bigexpt2 < r.lzc then
+      elsif lzc = 26 or r.bigexpt2 < lzc then
         fc.expt := (others => '0');
       else
-        fc.expt := r.bigexpt2 - (r.lzc - 1);
+        fc.expt := r.bigexpt2 - (lzc - 1);
       end if;
 
-      if r.lzc = 0 and r.bigexpt2 = 254 then
+      if lzc = 0 and r.bigexpt2 = 254 then
         fc.frac := (others => '0');
-      elsif r.lzc = 0 then
+      elsif lzc = 0 then
         fc.frac := r.rawfrac(24 downto 2);
-      elsif r.lzc = 26 or r.bigexpt2 < r.lzc then
+      elsif lzc = 26 or r.bigexpt2 < lzc then
         fc.frac := (others => '0');
       else
-        fc.frac := shift_left(r.rawfrac, r.lzc - 1)(23 downto 1);
+        fc.frac := shift_left(r.rawfrac, lzc - 1)(23 downto 1);
       end if;
 
     end if;
