@@ -16,12 +16,10 @@ package body ftoi_p is
   function ftoi(a: fpu_data_t)
     return fpu_data_t is
 
-    variable a_32bit : float_t;
-    variable result  : fpu_data_t;
-    variable flag    : fpu_data_t;
-    variable diff    : integer range 0 to 128;
-    variable nbit    : fpu_data_t;
-    variable n       : integer range 0 to 23;
+    variable fa     : float_t;
+    variable sign   : std_logic;
+    variable diff   : integer range 0 to 128;
+    variable result : fpu_data_t;
 
   begin
 
@@ -29,33 +27,24 @@ package body ftoi_p is
       return (others => 'X');
     end if;
 
-    a_32bit := float(a);
-    flag := resize(a_32bit.sign, 32);
+    fa   := float(a);
+    sign := fa.sign(0);
 
-    if a_32bit.expt < 127 then
-      result := x"00000000";
+    if fa.expt < 127 then
+      result := (others => '0');
     else
-      diff := to_integer(a_32bit.expt) - 127;
+      diff := to_integer(fa.expt) - 127;
 
       if diff > 30 then
-        if flag = 0 then
-          result := x"7fffffff";
-        else
-          result := x"80000000";
-        end if;
+        result := (others => '0');
+      elsif diff < 23 then
+        result := resize(shift_right("1" & fa.frac, 23 - diff), 32);
       else
-        if diff < 23 then
-          n := diff;
-          nbit := resize(shift_right(a_32bit.frac, 23-n), 32);
-        else
-          n := 23;
-          nbit := resize(a_32bit.frac, 32);
-        end if;
-        result := shift_left(x"00000001", diff) +
-                  shift_left(nbit, diff - n);
+        result := resize(shift_left("1" & fa.frac, diff - 23), 32);
       end if;
-      if flag = 1 then
-        result := (not result) + 1;
+
+      if sign = '1' then
+        result := unsigned(- signed(result));
       end if;
     end if;
 
