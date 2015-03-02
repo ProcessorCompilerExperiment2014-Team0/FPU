@@ -60,14 +60,17 @@ architecture behavior of fadd_pipeline is
     fb        : float_t;
     state1    : state_t;
     fcorner1  : fpu_data_t;
-    bigexpt   : unsigned(7 downto 0);
+    bigexpt1  : unsigned(7 downto 0);
     bigfrac   : unsigned(22 downto 0);
     smallfrac : unsigned(22 downto 0);
     expdiff   : integer range 0 to 255;
     -- stage 2
     state2    : state_t;
     fcorner2  : fpu_data_t;
-    fc        : float_t;
+    fcsign    : unsigned(0 downto 0);
+    bigexpt2  : unsigned(7 downto 0);
+    rawfrac   : unsigned(25 downto 0);
+    lzc       : integer range 0 to 31;
   end record latch_t;
 
   constant latch_init : latch_t := (
@@ -76,14 +79,17 @@ architecture behavior of fadd_pipeline is
     fb        => float(x"00000000"),
     state1    => CORNER,
     fcorner1  => (others => '0'),
-    bigexpt   => (others => '0'),
+    bigexpt1  => (others => '0'),
     bigfrac   => (others => '0'),
     smallfrac => (others => '0'),
     expdiff   => 0,
     -- stage 2
     state2    => CORNER,
     fcorner2  => (others => '0'),
-    fc        => float(x"00000000"));
+    fcsign    => (others => '0'),
+    bigexpt2  => (others => '0'),
+    rawfrac   => (others => '0'),
+    lzc       => 0);
 
   signal r, rin : latch_t := latch_init;
 
@@ -97,13 +103,12 @@ begin
 
     variable smallfrac : unsigned(24 downto 0);
     variable bigfrac   : unsigned(24 downto 0);
-    variable lzc       : integer range 0 to 31;
-    variable rawfrac   : unsigned(25 downto 0);
 
     variable l : line;
 
   begin
-    v := r;
+    v  := r;
+    fc := float(x"00000000");
 
     if stall /= '1' then
 
@@ -162,7 +167,7 @@ begin
         fsmall := fa;
       end if;
 
-      v.bigexpt   := fbig.expt;
+      v.bigexpt1  := fbig.expt;
       v.bigfrac   := fbig.frac;
       v.smallfrac := fsmall.frac;
       v.expdiff   := to_integer(resize(unsigned(abs(signed(resize(fa.expt, 9) - resize(fb.expt, 9)))), 8));
@@ -173,15 +178,16 @@ begin
 
       v.state2   := r.state1;
       v.fcorner2 := r.fcorner1;
+      v.bigexpt2 := r.bigexpt1;
 
       -- sign bit
 
       if (r.fa.sign = "1" and r.fb.sign = "1")
         or (r.fa.sign = "1" and (r.fa.expt & r.fa.frac) > (r.fb.expt & r.fb.frac))
         or (r.fb.sign = "1" and (r.fa.expt & r.fa.frac) < (r.fb.expt & r.fb.frac)) then
-        v.fc.sign := "1";
+        v.fcsign := "1";
       else
-        v.fc.sign := "0";
+        v.fcsign := "0";
       end if;
 
       -- exp and frac
@@ -194,12 +200,12 @@ begin
       end if;
 
       if r.fa.sign /= r.fb.sign then
-        rawfrac := resize(bigfrac, 26) - resize(smallfrac, 26);
+        v.rawfrac := resize(bigfrac, 26) - resize(smallfrac, 26);
       else
-        rawfrac := resize(bigfrac, 26) + resize(smallfrac, 26);
+        v.rawfrac := resize(bigfrac, 26) + resize(smallfrac, 26);
       end if;
 
-      lzc := leading_zero(rawfrac);
+      v.lzc := leading_zero(v.rawfrac);
 
       -- Debug code
       if false then
@@ -213,41 +219,42 @@ begin
         hwrite(l, std_logic_vector(resize(bigfrac, 32)));
         writeline(output, l);
         write(l, string'("rawfrac   : "));
-        hwrite(l, std_logic_vector(resize(rawfrac, 32)));
+        hwrite(l, std_logic_vector(resize(v.rawfrac, 32)));
         writeline(output, l);
         write(l, string'("lzc       : "));
-        hwrite(l, std_logic_vector(to_unsigned(lzc, 32)));
+        hwrite(l, std_logic_vector(to_unsigned(v.lzc, 32)));
         writeline(output, l);
       end if;
 
-      if lzc = 0 and r.bigexpt = 254 then
-        v.fc.expt := (others => '1');
-      elsif lzc = 0 then
-        v.fc.expt := r.bigexpt + 1;
-      elsif lzc = 26 or r.bigexpt < lzc then
-        v.fc.expt := (others => '0');
+      -- Stage 3
+
+      fc.sign := r.fcsign;
+
+      if r.lzc = 0 and r.bigexpt2 = 254 then
+        fc.expt := (others => '1');
+      elsif r.lzc = 0 then
+        fc.expt := r.bigexpt2 + 1;
+      elsif r.lzc = 26 or r.bigexpt2 < r.lzc then
+        fc.expt := (others => '0');
       else
-        v.fc.expt := r.bigexpt - (lzc - 1);
+        fc.expt := r.bigexpt2 - (r.lzc - 1);
       end if;
 
-      if lzc = 0 and r.bigexpt = 254 then
-        v.fc.frac := (others => '0');
-      elsif lzc = 0 then
-        v.fc.frac := rawfrac(24 downto 2);
-      elsif lzc = 26 or r.bigexpt < lzc then
-        v.fc.frac := (others => '0');
+      if r.lzc = 0 and r.bigexpt2 = 254 then
+        fc.frac := (others => '0');
+      elsif r.lzc = 0 then
+        fc.frac := r.rawfrac(24 downto 2);
+      elsif r.lzc = 26 or r.bigexpt2 < r.lzc then
+        fc.frac := (others => '0');
       else
-        v.fc.frac := shift_left(rawfrac, lzc - 1)(23 downto 1);
+        fc.frac := shift_left(r.rawfrac, r.lzc - 1)(23 downto 1);
       end if;
 
     end if;
 
-    ---------------------------------------------------------------------------
-    -- Stage 3
-    ---------------------------------------------------------------------------
     case r.state2 is
       when CORNER => s <= r.fcorner2;
-      when NORMAL => s <= fpu_data(r.fc);
+      when NORMAL => s <= fpu_data(fc);
     end case;
 
     rin <= v;
