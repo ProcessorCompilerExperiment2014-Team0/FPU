@@ -1,70 +1,83 @@
--- TestBench Template 
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use ieee.std_logic_textio.all;
 
-LIBRARY ieee;
-USE ieee.std_logic_1164.ALL;
-USE ieee.numeric_std.ALL;
-use IEEE.std_logic_textio.all;
-
+library std;
 use std.textio.all;
 
-use ieee.std_logic_arith.all;
-use ieee.std_logic_unsigned.all;
+library work;
+use work.fmul_pipeline_p.all;
 
-ENTITY testbench IS
-END testbench;
+entity fmul_tb is
+end fmul_tb;
 
-ARCHITECTURE behavior OF testbench IS
+architecture behavior of fmul_tb is
 
-  -- Component Declaration
-  COMPONENT fmul
-    PORT(A : IN std_logic_vector(31 downto 0);
-         B : IN std_logic_vector(31 downto 0);
-         S : OUT std_logic_vector(31 downto 0));
-  END COMPONENT;
+  signal xrst, stall : std_logic;
+  signal i1, i2      : unsigned(31 downto 0);
+  signal o1          : unsigned(31 downto 0);
+  signal clk         : std_logic;
+  signal terminate   : std_logic             := '0';
+  signal t_start     : unsigned(31 downto 0) := x"00000000";
+  signal t_end       : unsigned(31 downto 0) := x"00000000";
 
-  SIGNAL i1 :  std_logic_vector(31 downto 0);
-  SIGNAL i2 :  std_logic_vector(31 downto 0);
-  SIGNAL o1 :  std_logic_vector(31 downto 0);
+  file infile  : text is in  "fmul_test/testcase.txt";
+  file outfile : text is out "fmul_test/result.txt";
 
-BEGIN
+begin
 
-  -- Component Instantiation
-  uut: fmul PORT MAP(
-    A => i1,
-    B => i2,
-    S => o1);
+  xrst  <= '1';
+  stall <= '0';
 
-  --  Test Bench Statements
-  tb : PROCESS
-    file infile : text is in "/home/kazuki/CPU/FPU/fmul_test/testcase.txt";
-    file outfile : text is out "/home/kazuki/CPU/FPU/fmul_test/result.txt";
-    variable my_line, out_line : LINE;
-    variable a, b, c : std_logic_vector(31 downto 0);
-  BEGIN
-    
-    wait for 100 ns; -- wait until global set/reset completes
+  uut : fmul_pipeline port map(
+    clk   => clk,
+    xrst  => xrst,
+    stall => stall,
+    a     => i1,
+    b     => i2,
+    s     => o1);
 
-    -- Add user defined stimulus here
-    
-    while not endfile(infile) loop
-      readline(infile, my_line);
-      read(my_line, a);
-      readline(infile, my_line);
-      read(my_line, b);
+  tb : process (clk)
+    variable my_line, out_line : line;
+    variable a, b              : std_logic_vector(31 downto 0);
+    variable t                 : unsigned(31 downto 0);
+  begin
 
-      i1 <= a;
-      i2 <= b;
+    if rising_edge(clk) then
+      if not endfile(infile) then
+        readline(infile, my_line);
+        read(my_line, a);
+        read(my_line, b);
 
-      wait for 2 ns;
+        i1 <= unsigned(a);
+        i2 <= unsigned(b);
+      else
+        t := t_end;
+        if t >= 2 then
+          terminate <= '1';
+        end if;
+        t_end <= t + 1;
+      end if;
 
-      c := o1;
+      if t_start >= 3 then
+        write(out_line, std_logic_vector(o1));
+        writeline(outfile, out_line);
+      end if;
+      t_start <= t_start + 1;
+   end if;
+  end process;
 
-      write(out_line, c);
-      writeline(outfile, out_line);
-    end loop;
-
-  END PROCESS;
-
-  --  End Test Bench
+  clockgen: process  
+  begin
+    if terminate = '0' then
+      clk <= '0';
+      wait for 5 ns;
+      clk <= '1';
+      wait for 5 ns;
+    else
+      wait;
+    end if;
+  end process;
 
 end behavior;
