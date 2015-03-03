@@ -95,17 +95,22 @@ architecture behavior of fsqrt is
   type state_t is (NORMAL, CORNER);
 
   type latch_t is record
-    state0, state1   : state_t;
-    bridge0, bridge1 : fpu_data_t;
-    data             : unsigned(35 downto 0);
+    state0, state1 : state_t;
+    bridge0        : fpu_data_t;
+    bridge1        : fpu_data_t;
+    y              : unsigned(22 downto 0);
+    temp_expt      : unsigned(7 downto 0);
+    temp_frac      : unsigned(13 downto 0);
   end record latch_t;
 
   constant latch_init : latch_t := (
-    state0  => CORNER,
-    state1  => CORNER,
-    bridge0 => (others => '-'),
-    bridge1 => (others => '-'),
-    data    => (others => '-'));
+    state0    => CORNER,
+    state1    => CORNER,
+    bridge0   => (others => '-'),
+    bridge1   => (others => '-'),
+    y         => (others => '-'),
+    temp_expt => (others => '-'),
+    temp_frac => (others => '-'));
 
   signal r, rin : latch_t;
 
@@ -124,14 +129,13 @@ begin
     variable en   : std_logic;
     variable addr : unsigned(9 downto 0);
     variable f    : float_t;
-    -- variables for 3rd stage
-    variable h, g: float_t;
-    variable g_frac_25: unsigned(24 downto 0);
-    variable y: unsigned(22 downto 0);
+    -- variables for 2nd stage
+    variable h : float_t;
     variable d, n: unsigned(13 downto 0);
+    -- variables for 3rd stage
+    variable g: float_t;
+    variable g_frac_25: unsigned(24 downto 0);
     variable ans: unsigned(31 downto 0);
-    variable temp_expt: unsigned(7 downto 0);
-    variable temp_frac: unsigned(27 downto 0);
 
   begin
     v        := r;
@@ -183,37 +187,31 @@ begin
       rom_addr <= addr;
 
       -- 2nd stage
-      v.bridge1 := r.bridge0;
       v.state1  := r.state0;
-      v.data    := rom_data;
+      v.bridge1 := r.bridge0;
+
+      h           := float(r.bridge0);
+      d           := (not h.expt(0)) & rom_data(12 downto 0);
+      n           := h.frac(13 downto 0);
+      v.y         := rom_data(35 downto 13);
+      v.temp_frac := resize(shift_right(d * n, 14), 14);
+
+      if h.expt >= 127 then
+        v.temp_expt := 127 + shift_right(h.expt - 127, 1);
+      else
+        v.temp_expt := 127 - shift_right(128 - h.expt, 1);
+      end if;
 
       -- 3rd stage
+      g.sign := "0";
+      g.expt := r.temp_expt;
+      g.frac := r.y + r.temp_frac;
+
       case r.state1 is
         when CORNER =>
           ans := r.bridge1;
         when NORMAL =>
-          h      := float(r.bridge1);
-          g.sign := "0";
-          if h.expt >= 127 then
-            temp_expt := h.expt - 127;
-            temp_expt := shift_right(temp_expt, 1);
-            g.expt    := 127 + temp_expt;
-          else
-            temp_expt := 127 - h.expt;
-            temp_expt := shift_right(temp_expt+1, 1);
-            g.expt    := 127 - temp_expt;
-          end if;
-
-          y := r.data(35 downto 13);
-          if h.expt(0) = '1' then
-            d := '0' & r.data(12 downto 0);
-          else
-            d := '1' & r.data(12 downto 0);
-          end if;
-          n         := h.frac(13 downto 0);
-          temp_frac := shift_right(d * n, 14);
-          g.frac    := y + temp_frac(22 downto 0);
-          ans       := fpu_data(g);
+          ans := fpu_data(g);
       end case;
 
       s <= ans;
