@@ -27,6 +27,20 @@ uint32_t str_to_uint32t(char *str) {
   return (result);
 }
 
+int to_signed_int(union data_32bit a) {
+  int i;
+  int flag;
+  int ans;
+  flag = a.uint32 >> 31;
+  if (flag == 0) {
+    ans = a.uint32;
+  } else {
+    ans = ~(a.uint32 - 1);
+    ans = ans * (-1);
+  }
+  return ans;
+}
+
 void show_testcase(union data_32bit a,
 		   union data_32bit result, union data_32bit correct) {
   printf("-- a --\n");
@@ -107,7 +121,7 @@ int main(void) {
     a.uint32 = i;
     //n.uint32 = normalize(i);    //もともとintなので不要
     result.uint32 = itof(a.uint32);
-    correct.fl32 = (float)a.uint32;
+    correct.fl32 = (float)to_signed_int(a);
     
     count = count_diff(result.uint32, correct.uint32);
     if ((-1 * PERMIT - 1) < count && count < PERMIT+1) {

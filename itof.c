@@ -68,9 +68,10 @@ uint32_t itof(uint32_t a) {
 	frac_grs = temp << (26 - i);
       } else {
 	s_bit = or_nbit(temp, (i-25));
-	frac_grs = (temp >> (i-25)) << 1;
+	frac_grs = ((temp >> (i-25)) & 0x1ffffff) << 1;
 	frac_grs = frac_grs | s_bit;
       }
+
       result.frac = round_even_26bit(frac_grs);
       if (round_even_carry_26bit(frac_grs) == 1) {
 	result.exp++;   // int -> float なので inf (or -inf) になる心配はない

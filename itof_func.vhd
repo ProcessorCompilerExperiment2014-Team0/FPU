@@ -87,7 +87,7 @@ package body itof_p is
       if flag = 0 then
         temp := a;
       else
-        temp := not (a-1);
+        temp := not ((a and x"7fffffff") - 1);
       end if;
 
       i := 30;
@@ -103,24 +103,18 @@ package body itof_p is
         frac := shift_left(frac, 23-i);
         result.frac := frac(22 downto 0);
       else
-        case i is
-          when 24 =>
-            frac_grs := shift_left(temp and x"007FFFFF", 3);
-          when 25 =>
-            frac_grs := shift_left(temp and x"007FFFFF", 2);
-          when 26 =>
-            frac_grs := shift_left(temp and x"007FFFFF", 1);
-          when 27 =>
-            frac_grs := temp and x"007FFFFF";
-          when others =>
-            s_bit := or_nbit(temp, i-25);
-            frac_grs := shift_right(shift_left(temp, 32-i), 6);
-            frac_grs := frac_grs or s_bit;
-        end case;
+        if 23 < i and i < 27 then
+          temp := temp((i-1) downto 0);
+          frac_grs := shift_left(temp,26-i);
+        else
+          s_bit := or_nbit(temp, i-25);
+          frac_grs := shift_left((shift_right(temp,i-25) and x"1ffffff"), 1);
+          frac_grs := frac_grs or s_bit;
+        end if;
 
         result.frac := round_even_26bit(frac_grs)(22 downto 0);
         if round_even_carry_26bit(frac_grs) = 1 then
-          result.expt := result.expt+1;
+          result.expt := result.expt + 1;
         end if;
       end if;
     end if;
