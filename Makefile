@@ -8,8 +8,10 @@ LD = gcc
 LDFLAGS = -lm
 
 TESTBENCH = fcmp_gt_tb ftoi_tb itof_tb
-SOURCES =  fcmp.vhd fcmp_gt_tb.vhd ftoi_tb.vhd ftoi_func.vhd itof_tb.vhd itof_func.vhd itof_pipeline.vhd fpu_common.vhd \
-  fsqrt_tb.vhd fsqrt.vhd table.vhd fadd_pipeline.vhd fadd_tb.vhd finv.vhd finv_tb.vhd fmul_pipeline.vhd fmul_tb.vhd
+SOURCES = fcmp.vhd fcmp_gt_tb.vhd ftoi_tb.vhd ftoi_func.vhd itof_tb.vhd \
+          itof_pipeline.vhd fpu_common.vhd fsqrt_tb.vhd fsqrt.vhd table.vhd \
+          fadd_pipeline.vhd fadd_tb.vhd finv.vhd finv_tb.vhd fmul_pipeline.vhd \
+          fmul_tb.vhd
 GHDLC = ghdl
 GHDLFLAGS  = -g --ieee=synopsys --mb-comments -fexplicit
 GHDL_SIM_OPT = --stop-time=20ms

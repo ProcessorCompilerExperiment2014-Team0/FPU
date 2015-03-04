@@ -44,31 +44,6 @@ end entity fmul_pipeline;
 
 architecture behavior of fmul_pipeline is
 
-  -- round_even : 26bit -> 23bit
-  function round_even(num: unsigned(25 downto 0))
-    return unsigned is
-    variable result : unsigned(22 downto 0);
-  begin
-    if (4 < num(3 downto 0) and num(3 downto 0) < 8) or (11 < num(3 downto 0)) then
-      result := num(25 downto 3) + 1;
-    else
-      result := num(25 downto 3);
-    end if;
-    return result;
-  end round_even;
-
-  -- round_even_carry : 26bit -> 1bit
-  function round_even_carry(num: unsigned(25 downto 0))
-    return unsigned is
-  begin
-    -- "11 1111 1111 1111 1111 1111 1011"より大きいかどうか
-    if num(25 downto 0) > x"3fffffb" then
-      return "1";
-    else
-      return "0";
-    end if;
-  end round_even_carry;
-
   type state_t is (CORNER, NORMAL);
 
   type latch_t is record
@@ -186,12 +161,12 @@ begin
 
       if product(27) = '1' then         -- 繰り上がりありの場合
         mant   := product(26 downto 2) & (product(1) or product(0));
-        v.exp1 := v.exp1 + round_even_carry(mant);
-        v.frac := round_even(mant);
+        v.exp1 := v.exp1 + round_even_carry_26bit(mant);
+        v.frac := round_even_26bit(mant);
       else
         mant   := product(25 downto 0);
-        v.exp1 := v.exp1 + round_even_carry(mant);
-        v.frac := round_even(mant);
+        v.exp1 := v.exp1 + round_even_carry_26bit(mant);
+        v.frac := round_even_26bit(mant);
       end if;
 
       -- stage 3

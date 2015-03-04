@@ -6,9 +6,6 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-library work;
-use work.itof_p.all;
-
 package itof_pipeline_p is
 
   component itof_pipeline is
@@ -31,7 +28,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 library work;
-use work.itof_p.all;
+use work.fpu_common_p.all;
 use work.itof_pipeline_p.all;
 
 entity itof_pipeline is
@@ -60,15 +57,71 @@ begin
 
   comb: process (r, a, stall) is
     variable v: latch_t;
+
+    variable fa, result : float_t;
+    variable i               : integer range 0 to 30;
+    variable frac_grs        : unsigned(25 downto 0);
+    variable temp            : unsigned(30 downto 0);
   begin
     v := r;
 
     if stall /= '1' then
+      -------------------------------------------------------------------------
+      -- Stage 1
+      -------------------------------------------------------------------------
       v.a    := a;
-      v.s    := itof(r.a);
+
+      -------------------------------------------------------------------------
+      -- Stage 2
+      -------------------------------------------------------------------------
+      fa := float(r.a);
+
+      if is_metavalue(r.a) or r.a = 0 then
+        result := float(x"00000000");
+      elsif r.a = x"80000000" then
+        result.sign := "1";
+        result.expt := x"9e";
+        result.frac := (others => '0');
+      else
+        if fa.sign = 0 then
+          temp := fa.expt & fa.frac;
+        else
+          temp := unsigned(- signed(fa.expt & fa.frac));
+        end if;
+
+        i := leading_zero_negative(temp);
+
+        result.sign := fa.sign;
+        result.expt := to_unsigned(127 + i, 8);
+
+        if i < 24 then
+          result.frac := shift_left(temp(22 downto 0), 23-i);
+        else
+          if i = 24 then
+            frac_grs := temp(23 downto 0) & "00";
+          elsif i = 25 then
+            frac_grs := temp(24 downto 0) & "0";
+          elsif i = 26 then
+            frac_grs := temp(25 downto 0);
+          else
+            frac_grs := resize(shift_right(temp, i-25), 25) & to_unsigned(or_nbit_31(temp, i-25), 1);
+          end if;
+
+          result.frac := round_even_26bit(frac_grs);
+          if round_even_carry_26bit(frac_grs) = 1 then
+            result.expt := result.expt + 1;
+          end if;
+        end if;
+      end if;
+
+      v.s    := fpu_data(result);
     end if;
 
+    ---------------------------------------------------------------------------
+    -- Stage 3
+    ---------------------------------------------------------------------------
     s   <= r.s;
+
     rin <= v;
   end process comb;
 

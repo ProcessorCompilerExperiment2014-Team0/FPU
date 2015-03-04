@@ -41,7 +41,9 @@ package fpu_common_p is
   function leading_zero (a : unsigned(25 downto 0)) return integer;
   function under_nbit (a : unsigned(30 downto 0); n : integer range 0 to 31) return unsigned;
   function or_nbit (a : unsigned(24 downto 0); n : integer range 0 to 25) return integer;
-  function or_nbit_31 (a : unsigned(30 downto 0); n : integer range 0 to 31) return integer;
+  function round_even_26bit(n: unsigned(25 downto 0)) return unsigned;
+  function round_even_carry_26bit(num : unsigned(25 downto 0)) return unsigned;
+
 
 end package;
 
@@ -273,51 +275,29 @@ package body fpu_common_p is
 
   end function or_nbit;
 
-  function or_nbit_31 (
-    a : unsigned(30 downto 0);
-    n : integer range 0 to 31)
-    return integer is
-    variable cond : boolean;
+  function round_even_26bit(n: unsigned(25 downto 0))
+    return unsigned is
+    variable right4: unsigned(3 downto 0);
   begin
 
-    case n is
-      when 0  => cond := true;
-      when 1  => cond := a(0 downto 0) = 0;
-      when 2  => cond := a(1 downto 0) = 0;
-      when 3  => cond := a(2 downto 0) = 0;
-      when 4  => cond := a(3 downto 0) = 0;
-      when 5  => cond := a(4 downto 0) = 0;
-      when 6  => cond := a(5 downto 0) = 0;
-      when 7  => cond := a(6 downto 0) = 0;
-      when 8  => cond := a(7 downto 0) = 0;
-      when 9  => cond := a(8 downto 0) = 0;
-      when 10 => cond := a(9 downto 0) = 0;
-      when 11 => cond := a(10 downto 0) = 0;
-      when 12 => cond := a(11 downto 0) = 0;
-      when 13 => cond := a(12 downto 0) = 0;
-      when 14 => cond := a(13 downto 0) = 0;
-      when 15 => cond := a(14 downto 0) = 0;
-      when 16 => cond := a(15 downto 0) = 0;
-      when 17 => cond := a(16 downto 0) = 0;
-      when 18 => cond := a(17 downto 0) = 0;
-      when 19 => cond := a(18 downto 0) = 0;
-      when 20 => cond := a(19 downto 0) = 0;
-      when 21 => cond := a(20 downto 0) = 0;
-      when 22 => cond := a(21 downto 0) = 0;
-      when 23 => cond := a(22 downto 0) = 0;
-      when 24 => cond := a(23 downto 0) = 0;
-      when 25 => cond := a(24 downto 0) = 0;
-      when 26 => cond := a(25 downto 0) = 0;
-      when 27 => cond := a(26 downto 0) = 0;
-      when 28 => cond := a(27 downto 0) = 0;
-      when 29 => cond := a(28 downto 0) = 0;
-      when 30 => cond := a(29 downto 0) = 0;
-      when 31 => cond := a = 0;
-    end case;
+    right4 := n(3 downto 0);
 
-    if cond then return 0; else return 1; end if;
+    if (4 < right4 and right4 < 8) or 11 < right4 then
+      return n(25 downto 3) + 1;
+    else
+      return n(25 downto 3);
+    end if;
 
-  end function or_nbit_31;
+  end function;
 
+  function round_even_carry_26bit(num: unsigned(25 downto 0))
+    return unsigned is
+  begin
+    if x"3fffffc" <= num and num <= x"3ffffff" then
+      return "1";
+    else
+      return "0";
+    end if;
+  end function;
 
 end package body;
