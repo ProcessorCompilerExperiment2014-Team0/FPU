@@ -8,7 +8,7 @@ LD = gcc
 LDFLAGS = -lm
 
 TESTBENCH = fcmp_gt_tb ftoi_tb itof_tb
-SOURCES =  fcmp.vhd fcmp_gt_tb.vhd ftoi_tb.vhd ftoi_func.vhd itof_tb.vhd itof_func.vhd fpu_common.vhd \
+SOURCES =  fcmp.vhd fcmp_gt_tb.vhd ftoi_tb.vhd ftoi_func.vhd itof_tb.vhd itof_func.vhd itof_pipeline.vhd fpu_common.vhd \
   fsqrt_tb.vhd fsqrt.vhd table.vhd fadd_pipeline.vhd fadd_tb.vhd finv.vhd finv_tb.vhd fmul_pipeline.vhd fmul_tb.vhd
 GHDLC = ghdl
 GHDLFLAGS  = -g --ieee=synopsys --mb-comments -fexplicit
@@ -126,6 +126,17 @@ test_fsqrt_vhdl: work-obj93.cf testcase-mono.txt
 	-mkdir fsqrt_test/
 	-cp testcase-mono.txt fsqrt_test/testcase.txt
 	$(GHDLC) -r $(GHDLFLAGS) fsqrt_tb
+
+test_itof_diff: test_itof_c test_itof_vhdl
+	diff answer.txt itof_test/result.txt
+test_itof_c: testcase-mono.txt makeanswer_itof
+	./makeanswer_itof
+test_itof_vhdl: work-obj93.cf testcase-mono.txt
+	$(GHDLC) -m $(GHDLFLAGS) itof_tb
+	-mkdir itof_test/
+	-cp testcase-mono.txt itof_test/testcase.txt
+	$(GHDLC) -r $(GHDLFLAGS) itof_tb
+
 
 $(TESTBENCH): work-obj93.cf gen_input
 	$(GHDLC) -m $(GHDLFLAGS) $@
