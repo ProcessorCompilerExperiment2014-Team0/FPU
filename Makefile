@@ -77,6 +77,9 @@ work-obj93.cf: $(SOURCES)
 makeanswer_fadd.o: fadd.c
 makeanswer_fadd: makeanswer_fadd.o
 	$(CC) $^ -o $@ $(CFLAGS) -lm
+makeanswer_fmul.o: fmul.c
+makeanswer_fmul: makeanswer_fmul.o
+	$(CC) $^ -o $@ $(CFLAGS) -lm
 makeanswer_finv.o: finv.c
 makeanswer_finv: makeanswer_finv.o table.o
 	$(CC) $^ -o $@ $(CFLAGS) -lm

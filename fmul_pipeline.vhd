@@ -52,9 +52,8 @@ architecture behavior of fmul_pipeline is
     data0  : fpu_data_t;
     sign0  : unsigned(31 downto 31);
     exp0   : unsigned(8 downto 0);
-    ah_bh  : unsigned(27 downto 0);
-    ah_bl  : unsigned(17 downto 0);
-    al_bh  : unsigned(17 downto 0);
+    afrac  : unsigned(22 downto 0);
+    bfrac  : unsigned(22 downto 0);
     -- stage 2
     state1 : state_t;
     data1  : fpu_data_t;
@@ -68,9 +67,8 @@ architecture behavior of fmul_pipeline is
     data0  => (others => '0'),
     sign0  => (others => '0'),
     exp0   => (others => '0'),
-    ah_bh  => (others => '0'),
-    ah_bl  => (others => '0'),
-    al_bh  => (others => '0'),
+    afrac  => (others => '0'),
+    bfrac  => (others => '0'),
     state1 => CORNER,
     data1  => (others => '0'),
     sign1  => (others => '0'),
@@ -88,12 +86,11 @@ begin
     -- stage 1
     variable fa      : float_t;
     variable fb      : float_t;
-    variable a_hmant : unsigned(13 downto 0);
-    variable b_hmant : unsigned(13 downto 0);
-    variable a_lmant : unsigned(13 downto 0);  -- 14bit。0詰め必要。
-    variable b_lmant : unsigned(13 downto 0);
     -- stage 2
-    variable product : unsigned(27 downto 0);
+    variable a_mant  : unsigned(23 downto 0);
+    variable b_hmant : unsigned(11 downto 0);
+    variable b_lmant : unsigned(11 downto 0);
+    variable product : unsigned(24 downto 0);
     variable mant    : unsigned(25 downto 0);
     -- stage 3
     variable exp     : unsigned(8 downto 0);
@@ -139,41 +136,35 @@ begin
         v.state0 := NORMAL;
       end if;
 
-      a_hmant := '1' & fa.frac(22 downto 10);
-      b_hmant := '1' & fb.frac(22 downto 10);
-      a_lmant := "0000" & fa.frac(9 downto 0);
-      b_lmant := "0000" & fb.frac(9 downto 0);
+      v.afrac := fa.frac;
+      v.bfrac := fb.frac;
 
       v.sign0 := fa.sign xor fb.sign;
-      v.exp0  := resize(fa.expt, 9) + resize(fb.expt, 9);  -- -127が必要だが0未満になると困るので後で。
-      v.ah_bh := a_hmant * b_hmant;  -- 14bit * 14bit = 28bit
-      v.ah_bl := resize(shift_right(a_hmant * b_lmant, 10), 18);
-      v.al_bh := resize(shift_right(a_lmant * b_hmant, 10), 18);
+      v.exp0  := resize(fa.expt, 9) + resize(fb.expt, 9);
 
       -- stage 2
       v.state1 := r.state0;
       v.data1  := r.data0;
       v.sign1  := r.sign0;
 
-      product := r.ah_bh + r.ah_bl + r.al_bh;
+      a_mant  := '1' & r.afrac;
+      b_hmant := '1' & r.bfrac(22 downto 12);
+      b_lmant := r.bfrac(11 downto 0);
 
-      v.exp1 := r.exp0 + product(27 downto 27);
+      product := resize(shift_right(a_mant * b_hmant, 11), 25) + resize(shift_right(a_mant * b_lmant, 23), 25) + 1;
 
-      if product(27) = '1' then         -- 繰り上がりありの場合
-        mant   := product(26 downto 2) & (product(1) or product(0));
-        v.exp1 := v.exp1 + round_even_carry_26bit(mant);
-        v.frac := round_even_26bit(mant);
+      v.exp1 := r.exp0 + product(24 downto 24);
+
+      if product(24) = '1' then
+        v.frac := product(23 downto 1);
       else
-        mant   := product(25 downto 0);
-        v.exp1 := v.exp1 + round_even_carry_26bit(mant);
-        v.frac := round_even_26bit(mant);
+        v.frac := product(22 downto 0);
       end if;
 
       -- stage 3
       result.sign := r.sign1;
 
-      -- exp-127 が指数部に実際に使う値
-      if r.exp1 > 127 then -- 指数部が正の場合
+      if r.exp1 > 127 then
         if r.exp1 > 381 then
           result.expt := to_unsigned(255, 8);
           result.frac := to_unsigned(0, 23);
@@ -182,7 +173,7 @@ begin
           result.expt := exp(7 downto 0);
           result.frac := r.frac;
         end if;
-      else  -- 指数部が0以下になってしまう場合
+      else
         result.expt := to_unsigned(0, 8);
         result.frac := to_unsigned(0, 23);
       end if;
