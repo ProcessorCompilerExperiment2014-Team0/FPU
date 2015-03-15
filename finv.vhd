@@ -23,41 +23,6 @@ package finv_p is
 end package;
 
 -------------------------------------------------------------------------------
--- Table
--------------------------------------------------------------------------------
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-library work;
-use work.fpu_common_p.all;
-use work.table_p.all;
-
-entity finv_table_rom is
-  port (
-    clk  : in  std_logic;
-    en   : in  std_logic;
-    addr : in  unsigned(9 downto 0);
-    data : out unsigned(35 downto 0));
-end finv_table_rom;
-
-architecture behavior of finv_table_rom is
-
-  constant rom: finv_table_t := finv_table;
-
-begin
-  process(clk)
-  begin
-    if rising_edge(clk) then
-      if en = '1' then
-        data <= ROM(to_integer(addr));
-      end if;
-    end if;
-  end process;
-end behavior;
-
--------------------------------------------------------------------------------
 -- Definition
 -------------------------------------------------------------------------------
 
@@ -68,6 +33,7 @@ use ieee.numeric_std.all;
 library work;
 use work.fpu_common_p.all;
 use work.finv_p.all;
+use work.table_p.all;
 
 entity finv is
   port (
@@ -80,23 +46,16 @@ end finv;
 
 architecture behavior of finv is
 
-  component finv_table_rom is
-    port (
-      clk  : in  std_logic;
-      en   : in  std_logic;
-      addr : in  unsigned(9 downto 0);
-      data : out unsigned(35 downto 0));
-  end component;
-
-  signal rom_en      : std_logic := '0';
-  signal rom_addr    : unsigned(9 downto 0);
-  signal rom_data    : unsigned(35 downto 0);
+  signal finv_table_distram : finv_table_t := finv_table;
+  attribute rom_style : string;
+  attribute rom_style of finv_table_distram : signal is "distributed";
 
   type state_t is (NORMAL, CORNER);
 
   type latch_t is record
     state0, state1   : state_t;
     bridge0, bridge1 : fpu_data_t;
+    rom_data         : unsigned(35 downto 0);
     q                : unsigned(13 downto 0);
     y                : unsigned(22 downto 0);
     temp_frac        : unsigned(13 downto 0);
@@ -107,6 +66,7 @@ architecture behavior of finv is
     state1    => CORNER,
     bridge0   => (others => '0'),
     bridge1   => (others => '0'),
+    rom_data  => (others => '0'),
     q         => (others => '0'),
     y         => (others => '0'),
     temp_frac => (others => '0'));
@@ -115,17 +75,10 @@ architecture behavior of finv is
 
 begin
 
-  table : finv_table_rom port map(
-    clk  => clk,
-    en   => rom_en,
-    addr => rom_addr,
-    data => rom_data);
-
-  comb : process (r, a, stall, rom_data) is
+  comb : process (r, a, stall) is
 
     variable v    : latch_t;
     -- variables for 1st stage
-    variable en   : std_logic;
     variable addr : unsigned(9 downto 0);
     variable f    : float_t;
     -- variables for 2nd stage
@@ -137,14 +90,10 @@ begin
 
   begin
     v    := r;
-    en   := '0';
-    addr := (others => '-');
+    addr := (others => '0');
     g    := float(x"00000000");
 
-    if stall = '1' then
-      rom_en   <= en;
-      rom_addr <= addr;
-    else
+    if stall = '0' then
       -- 1st stage
       v.state0 := CORNER;
 
@@ -168,24 +117,22 @@ begin
           when PLUS_ZERO  => v.bridge0 := VAL_PLUS_INF;
           when MINUS_ZERO => v.bridge0 := VAL_MINUS_INF;
           when others =>
-            en        := '1';
             addr      := f.frac(22 downto 13);
             v.state0  := NORMAL;
             v.bridge0 := a;
         end case;
       end if;
 
-      rom_en   <= en;
-      rom_addr <= addr;
+      v.rom_data := finv_table_distram(to_integer(addr));
 
       -- 2nd stage
       v.bridge1 := r.bridge0;
       v.state1  := r.state0;
 
-      d           := rom_data(12 downto 0);
+      d           := r.rom_data(12 downto 0);
       diff        := d * r.q;
       v.temp_frac := resize(shift_right(diff + 1, 12), 14);
-      v.y         := rom_data(35 downto 13);
+      v.y         := r.rom_data(35 downto 13);
 
       -- 3rd stage
       k      := float(r.bridge1);

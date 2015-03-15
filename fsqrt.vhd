@@ -23,41 +23,6 @@ package fsqrt_p is
 end package;
 
 -------------------------------------------------------------------------------
--- Table
--------------------------------------------------------------------------------
-
-library ieee;
-use ieee.std_logic_1164.all;
-use ieee.numeric_std.all;
-
-library work;
-use work.fpu_common_p.all;
-use work.table_p.all;
-
-entity fsqrt_table_rom is
-  port (
-    clk  : in  std_logic;
-    en   : in  std_logic;
-    addr : in  unsigned(9 downto 0);
-    data : out unsigned(35 downto 0));
-end fsqrt_table_rom;
-
-architecture behavior of fsqrt_table_rom is
-
-  signal rom: fsqrt_table_t := fsqrt_table;
-
-begin
-  process(clk)
-  begin
-    if rising_edge(clk) then
-      if en = '1' then
-        data <= ROM(to_integer(addr));
-      end if;
-    end if;
-  end process;
-end behavior;
-
--------------------------------------------------------------------------------
 -- Definition
 -------------------------------------------------------------------------------
 
@@ -68,6 +33,7 @@ use ieee.numeric_std.all;
 library work;
 use work.fpu_common_p.all;
 use work.fsqrt_p.all;
+use work.table_p.all;
 
 entity fsqrt is
   port (
@@ -80,17 +46,9 @@ end fsqrt;
 
 architecture behavior of fsqrt is
 
-  component fsqrt_table_rom is
-    port (
-      clk  : in  std_logic;
-      en   : in  std_logic;
-      addr : in  unsigned(9 downto 0);
-      data : out unsigned(35 downto 0));
-  end component;
-
-  signal rom_en      : std_logic := '0';
-  signal rom_addr    : unsigned(9 downto 0);
-  signal rom_data    : unsigned(35 downto 0);
+  signal fsqrt_table_distram : fsqrt_table_t := fsqrt_table;
+  attribute rom_style : string;
+  attribute rom_style of fsqrt_table_distram : signal is "distributed";
 
   type state_t is (NORMAL, CORNER);
 
@@ -98,6 +56,7 @@ architecture behavior of fsqrt is
     state0, state1 : state_t;
     bridge0        : fpu_data_t;
     bridge1        : fpu_data_t;
+    rom_data       : unsigned(35 downto 0);
     y              : unsigned(22 downto 0);
     temp_expt      : unsigned(7 downto 0);
     temp_frac      : unsigned(13 downto 0);
@@ -108,6 +67,7 @@ architecture behavior of fsqrt is
     state1    => CORNER,
     bridge0   => (others => '-'),
     bridge1   => (others => '-'),
+    rom_data  => (others => '-'),
     y         => (others => '-'),
     temp_expt => (others => '-'),
     temp_frac => (others => '-'));
@@ -116,17 +76,10 @@ architecture behavior of fsqrt is
 
 begin
 
-  table : fsqrt_table_rom port map(
-    clk  => clk,
-    en   => rom_en,
-    addr => rom_addr,
-    data => rom_data);
-
-  comb : process (r, a, stall, rom_data) is
+  comb : process (r, a, stall) is
 
     variable v    : latch_t;
     -- variables for 1st stage
-    variable en   : std_logic;
     variable addr : unsigned(9 downto 0);
     variable f    : float_t;
     -- variables for 2nd stage
@@ -139,12 +92,9 @@ begin
 
   begin
     v        := r;
-    en       := '0';
-    addr     := (others => '-');
+    addr     := (others => '0');
 
     if stall = '1' then
-      rom_en   <= en;
-      rom_addr <= addr;
       s        <= (others => '-');
     else
       -- 1st stage
@@ -168,7 +118,7 @@ begin
               v.bridge0 := VAL_MINUS_ZERO;
             end if;
           when PLUS_INF   => v.bridge0 := VAL_PLUS_INF;
-          when MINUS_INF  => v.bridge0 := VAL_MINUS_NAN;  -- 新たにVAL_MINUS_NANを追加
+          when MINUS_INF  => v.bridge0 := VAL_MINUS_NAN;  -- 新たにVAL_MINUS_NANを追�
           when PLUS_ZERO  => v.bridge0 := VAL_PLUS_ZERO;
           when MINUS_ZERO => v.bridge0 := VAL_MINUS_ZERO;
           when others =>
@@ -177,23 +127,21 @@ begin
             else
               v.state0  := NORMAL;
               v.bridge0 := unsigned(a);
-              en        := '1';
               addr      := (not f.expt(0)) & f.frac(22 downto 14);
             end if;
         end case;
       end if;
 
-      rom_en   <= en;
-      rom_addr <= addr;
+      v.rom_data := fsqrt_table_distram(to_integer(addr));
 
       -- 2nd stage
       v.state1  := r.state0;
       v.bridge1 := r.bridge0;
 
       h           := float(r.bridge0);
-      d           := (not h.expt(0)) & rom_data(12 downto 0);
+      d           := (not h.expt(0)) & r.rom_data(12 downto 0);
       n           := h.frac(13 downto 0);
-      v.y         := rom_data(35 downto 13);
+      v.y         := r.rom_data(35 downto 13);
       v.temp_frac := resize(shift_right(d * n, 14), 14);
 
       if h.expt >= 127 then
